@@ -65,7 +65,7 @@ namespace Ph2_System
 		/*!
 		 * \brief Destructor of the SystemController class
 		 */
-		~SystemController();
+		virtual ~SystemController();
 		/*!
 		* \brief create a FileHandler object with
 		 * \param pFilename : the filename of the binary file
@@ -121,7 +121,7 @@ namespace Ph2_System
 
 		}
 
-                const BeBoard* getBoard(int index) const {(index < fBoardVector.size()) ? fBoardVector.at(index) : nullptr;}
+	  const BeBoard* getBoard(int index) const {return (index < fBoardVector.size() ? fBoardVector.at(index) : nullptr);}
 		/*!
 		 * \brief Get next event from data buffer
 		 * \param pBoard

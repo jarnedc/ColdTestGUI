@@ -253,6 +253,8 @@ void SystemController::parseHWxml( const std::string& pFilename, std::ostream& o
     }
 
     cNBeBoard++;
+    for (auto & p : fBoardVector) 
+      std::cout << " SystemController::parseHWxml " << p << std::endl;
 
     fBeBoardInterface = new BeBoardInterface( fBeBoardFWMap );
     fCbcInterface = new CbcInterface( fBeBoardFWMap );
