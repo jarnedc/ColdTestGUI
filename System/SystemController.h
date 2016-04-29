@@ -65,7 +65,7 @@ namespace Ph2_System
 		/*!
 		 * \brief Destructor of the SystemController class
 		 */
-		~SystemController();
+		virtual ~SystemController();
 		/*!
 		* \brief create a FileHandler object with
 		 * \param pFilename : the filename of the binary file

@@ -42,12 +42,15 @@ class Tool : public SystemController
 #ifdef __HTTP__
 	THttpServer* fHttpServer;
 #endif
-	Tool() {fResultFile =0;}
-
-	~Tool() {
-	    if (fResultFile)    fResultFile->Close();
+	Tool() {fResultFile = nullptr;}
+	
+	virtual ~Tool() {
+	  if (fResultFile)  {
+            if(fResultFile->IsOpen())   fResultFile->Close();
+	    delete fResultFile;
+	  }
 	}
-
+	  
 
 
   public:
