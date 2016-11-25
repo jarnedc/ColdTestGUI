@@ -44,18 +44,19 @@ class Calibration : public Tool
   public:
 	Calibration() {};
 	~Calibration() {
-		if ( fResultFile ) {
-			fResultFile->Write();
-			fResultFile->Close();
-		}
+		//if ( fResultFile ) {
+			//fResultFile->Write();
+			//fResultFile->Close();
+		//}
 	}
 
 	void Initialise( bool pAllChan = false );
 	void FindVplus();
+	// offsets are found by taking pMultiple*fEvents triggers
 	void FindOffsets();
 	void SaveResults() {
 		writeGraphs();
-		dumpConfigFiles();
+		//dumpConfigFiles();
 	}
 
 
@@ -86,7 +87,6 @@ class Calibration : public Tool
 
 	void writeGraphs();
 
-	void dumpConfigFiles();
 
   private:
 	// helper methods

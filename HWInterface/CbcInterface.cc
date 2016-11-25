@@ -15,527 +15,394 @@
 #define DEV_FLAG 0
 // #define COUNT_FLAG 0
 
-namespace Ph2_HwInterface
-{
+namespace Ph2_HwInterface {
 
-CbcInterface::CbcInterface( const BeBoardFWMap& pBoardMap ) :
-    fBoardMap( pBoardMap ),
-    fBoardFW( nullptr ),
-    prevBoardIdentifier( 65535 ),
-    fRegisterCount( 0 ),
-    fTransactionCount( 0 )
-{
-#ifdef COUNT_FLAG
-    std::cout << "Counting number of Transactions!" << std::endl;
-#endif
-}
-
-CbcInterface::~CbcInterface()
-{
-}
-
-void CbcInterface::output()
-{
-#ifdef COUNT_FLAG
-    std::cout << "This instance of HWInterface::CbcInterface wrote (only write!) " << fRegisterCount << " Registers in " << fTransactionCount << " Transactions (only write!)! " << std::endl;
-#endif
-}
-
-void CbcInterface::setBoard( uint16_t pBoardIdentifier )
-{
-    if ( prevBoardIdentifier != pBoardIdentifier )
+    CbcInterface::CbcInterface ( const BeBoardFWMap& pBoardMap ) :
+        fBoardMap ( pBoardMap ),
+        fBoardFW ( nullptr ),
+        prevBoardIdentifier ( 65535 ),
+        fRegisterCount ( 0 ),
+        fTransactionCount ( 0 )
     {
-        BeBoardFWMap::iterator i = fBoardMap.find( pBoardIdentifier );
-        if ( i == fBoardMap.end() )
-            std::cout << "The Board: " << +( pBoardIdentifier >> 8 ) << "  doesn't exist" << std::endl;
-        else
+#ifdef COUNT_FLAG
+        LOG (DEBUG) << "Counting number of Transactions!" ;
+#endif
+    }
+
+    CbcInterface::~CbcInterface()
+    {
+    }
+
+    void CbcInterface::output()
+    {
+#ifdef COUNT_FLAG
+        LOG (DEBUG) << "This instance of HWInterface::CbcInterface wrote (only write!) " << fRegisterCount << " Registers in " << fTransactionCount << " Transactions (only write!)! " ;
+#endif
+    }
+
+    void CbcInterface::setBoard ( uint16_t pBoardIdentifier )
+    {
+        if ( prevBoardIdentifier != pBoardIdentifier )
         {
-            fBoardFW = i->second;
-            prevBoardIdentifier = pBoardIdentifier;
+            BeBoardFWMap::iterator i = fBoardMap.find ( pBoardIdentifier );
+
+            if ( i == fBoardMap.end() )
+                LOG (INFO) << "The Board: " << + ( pBoardIdentifier >> 8 ) << "  doesn't exist" ;
+            else
+            {
+                fBoardFW = i->second;
+                prevBoardIdentifier = pBoardIdentifier;
+            }
         }
     }
-}
 
 
-void CbcInterface::ConfigureCbc( const Cbc* pCbc, bool pVerifLoop, uint32_t pBlockSize )
-{
-    this->CbcFastReset( pCbc );
-
-    setBoard( pCbc->getBeBoardIdentifier() );
-
-    CbcRegMap cCbcRegMap = pCbc->getRegMap();
-    CbcRegMap::iterator cIt = cCbcRegMap.begin();
-
-    while ( cIt != cCbcRegMap.end() )
+    bool CbcInterface::ConfigureCbc ( const Cbc* pCbc, bool pVerifLoop, uint32_t pBlockSize )
     {
-        std::vector<uint32_t> cVecWrite;
-        std::vector<uint32_t> cVecRead;
+        //first, identify the correct BeBoardFWInterface
+        setBoard ( pCbc->getBeBoardIdentifier() );
 
-        uint32_t cCounter = 0;
+        //vector to encode all the registers into
+        std::vector<uint32_t> cVec;
 
-        for ( cIt; cIt != cCbcRegMap.end(); cIt++ )
+        //Deal with the CbcRegItems and encode them
+
+        CbcRegMap cCbcRegMap = pCbc->getRegMap();
+
+        for ( auto& cRegItem : cCbcRegMap )
         {
-
-            if ( cCounter >= pBlockSize ) break;
-
-            EncodeReg( cIt->second, pCbc->getCbcId(), cVecWrite );
-
-            if ( pVerifLoop )
-            {
-                CbcRegItem cItem = cIt->second;
-                cItem.fValue = 0;
-
-                EncodeReg( cItem, pCbc->getCbcId(), cVecRead );
-            }
+            fBoardFW->EncodeReg (cRegItem.second, pCbc->getCbcId(), cVec, pVerifLoop, true);
 #ifdef COUNT_FLAG
             fRegisterCount++;
 #endif
-            cCounter++;
         }
 
-        fBoardFW->WriteCbcBlockReg( pCbc->getFeId(), cVecWrite );
+        // write the registers, the answer will be in the same cVec
+        // the number of times the write operation has been attempted is given by cWriteAttempts
+        uint8_t cWriteAttempts = 0 ;
+        bool cSuccess = fBoardFW->WriteCbcBlockReg ( cVec, cWriteAttempts , pVerifLoop);
 
 #ifdef COUNT_FLAG
         fTransactionCount++;
 #endif
-        if ( pVerifLoop )
-        {
-            uint8_t cCbcId = pCbc->getCbcId();
 
-            fBoardFW->ReadCbcBlockReg( pCbc->getFeId(), cVecRead );
-
-
-            // for ( int i = 0; i < cVecWrite.size(); i++ )
-            // {
-            //  std::cout << "         feididpaaaaaaaavvvvvvvv" << std::endl;
-            //  std::cout << static_cast<std::bitset<32> >( cVecWrite.at( i ) ) << std::endl << static_cast<std::bitset<32> >( cVecRead.at( i ) ) << std::endl << std::endl;
-            // }
-
-            // only if I have a mismatch will i decode word by word and compare
-            if ( cVecWrite != cVecRead )
-            {
-                bool cAllgood = false;
-                int cIterationCounter = 1;
-                while ( !cAllgood )
-                {
-                    if ( cAllgood ) break;
-
-                    std::vector<uint32_t> cWrite_again;
-                    std::vector<uint32_t> cRead_again;
-
-                    auto cMismatchWord = std::mismatch( cVecWrite.begin(), cVecWrite.end(), cVecRead.begin() );
-
-                    while ( cMismatchWord.first != cVecWrite.end() )
-                    {
-                        CbcRegItem cRegItemWrite;
-                        DecodeReg( cRegItemWrite, cCbcId, *cMismatchWord.first );
-                        CbcRegItem cRegItemRead;
-                        DecodeReg( cRegItemRead, cCbcId, *cMismatchWord.second );
-
-                        // uint32_t index = std::distance( cVecWrite.end(), cMismatchWord.first );
-                        // std::advance( cIt, index );
-                        // std::string cMismatchName = cIt->first;
-
-                        if ( cIterationCounter == 5 )
-                        {
-                            std::cout << RED << "\nERROR !!!\nReadback value not the same after 5 Iteration for Register @ Page: "  << int( cRegItemWrite.fPage ) << " Address: " << int( cRegItemWrite.fAddress ) << "\n" << std::hex << "Written Value : 0x" << int( cRegItemWrite.fValue ) << "\nReadback Value : 0x" << int( cRegItemRead.fValue ) << std::dec << std::endl;
-                            std::cout << "Cbc Id : " << int( pCbc->getCbcId() ) << RESET << std::endl << std::endl;
-                            std::cout << BOLDRED << "Failed to write register in " << cIterationCounter << " trys! Giving up!" << RESET << std::endl;
-                        }
-
-                        cMismatchWord = std::mismatch( ++cMismatchWord.first, cVecWrite.end(), ++cMismatchWord.second );
-                        // mypause();
-
-                        // cWrite_again.push_back( *cMismatchWord.first );
-                        EncodeReg( cRegItemWrite, cCbcId, cWrite_again );
-                        cRegItemRead.fValue = 0;
-                        EncodeReg( cRegItemRead, cCbcId, cRead_again );
-                    }
-                    fBoardFW->WriteCbcBlockReg( pCbc->getFeId(), cWrite_again );
-                    fBoardFW->ReadCbcBlockReg( pCbc->getFeId(), cRead_again );
-                    if ( cWrite_again != cRead_again )
-                    {
-                        if ( cIterationCounter == 5 ) break;
-                        cVecWrite.clear();
-                        cVecWrite = cWrite_again;
-                        cVecRead.clear();
-                        cVecRead = cRead_again;
-                        cIterationCounter++;
-                    }
-                    else
-                    {
-                        std::cout << BLUE << "Managed to write all registers correctly in " << cIterationCounter << " Iteration(s)!" << RESET << std::endl;
-                        cAllgood = true;
-                    }
-                }
-            }
-        }
+        return cSuccess;
     }
-}
 
 
+    void CbcInterface::ReadCbc ( Cbc* pCbc )
+    {
+        //first, identify the correct BeBoardFWInterface
+        setBoard ( pCbc->getBeBoardIdentifier() );
 
-bool CbcInterface::WriteCbcReg( Cbc* pCbc, const std::string& pRegNode, uint8_t pValue, bool pVerifLoop )
-{
-    CbcRegItem cRegItem = pCbc->getRegItem( pRegNode );
-    std::vector<uint32_t> cVecWrite;
-    std::vector<uint32_t> cVecRead;
+        //vector to encode all the registers into
+        std::vector<uint32_t> cVec;
+        //helper vector to store the register names in the same order as the RegItems
+        std::vector<std::string> cNameVec;
 
-    cRegItem.fValue = pValue;
+        //Deal with the CbcRegItems and encode them
 
-    setBoard( pCbc->getBeBoardIdentifier() );
+        CbcRegMap cCbcRegMap = pCbc->getRegMap();
 
-    EncodeReg( cRegItem, pCbc->getCbcId(), cVecWrite );
+        for ( auto& cRegItem : cCbcRegMap )
+        {
+            cRegItem.second.fValue = 0x00;
+            fBoardFW->EncodeReg (cRegItem.second, pCbc->getCbcId(), cVec, true, false);
+            //push back the names in cNameVec for latercReg
+            cNameVec.push_back (cRegItem.first);
+#ifdef COUNT_FLAG
+            fRegisterCount++;
+#endif
+        }
 
-    fBoardFW->WriteCbcBlockReg( pCbc->getFeId(), cVecWrite );
+        // write the registers, the answer will be in the same cVec
+        //bool cSuccess = fBoardFW->WriteCbcBlockReg ( cVec, pVerifLoop);
+
+        // write the registers, the answer will be in the same cVec
+        fBoardFW->ReadCbcBlockReg ( cVec);
 
 #ifdef COUNT_FLAG
-    fRegisterCount++;
-    fTransactionCount++;
+        fTransactionCount++;
 #endif
 
-    pCbc->setReg( pRegNode, pValue );
+        bool cFailed = false;
+        bool cRead;
+        uint8_t cCbcId;
+        //update the HWDescription object with the value I just read
+        uint32_t idxReadWord = 0;
 
-    if ( pVerifLoop )
-    {
-        uint8_t cCbcId = pCbc->getCbcId();
-
-        cRegItem.fValue = 0;
-
-        EncodeReg( cRegItem, pCbc->getCbcId(), cVecRead );
-
-        fBoardFW->ReadCbcBlockReg( pCbc->getFeId(), cVecRead );
-
-        // for ( int i = 0; i < cVecWrite.size(); i++ )
-        // {
-        //  std::cout << "           <-idpaaaaaaaavvvvvvvv" << std::endl;
-        //  std::cout << static_cast<std::bitset<32> >( cVecWrite.at( i ) ) << std::endl << static_cast<std::bitset<32> >( cVecRead.at( i ) ) << std::endl << std::endl;
-        // }
-
-        bool cAllgood = false;
-
-        if ( cVecWrite != cVecRead )
+        //for ( const auto& cReg : cVec )
+        for ( const auto& cReadWord : cVec )
         {
-            int cIterationCounter = 1;
-            while ( !cAllgood )
-            {
-                if ( cAllgood ) break;
+            CbcRegItem cRegItem;
+            std::string cName = cNameVec[idxReadWord++];
+            fBoardFW->DecodeReg ( cRegItem, cCbcId, cReadWord, cRead, cFailed );
 
-                std::vector<uint32_t> cWrite_again;
-                std::vector<uint32_t> cRead_again;
+            // here I need to find the string matching to the reg item!
+            if (!cFailed)
+                pCbc->setReg ( cName, cRegItem.fValue );
 
-                CbcRegItem cReadItem;
-                CbcRegItem cWriteItem;
-                DecodeReg( cWriteItem, cCbcId, cVecWrite.at( 0 ) );
-                DecodeReg( cReadItem, cCbcId, cVecRead.at( 0 ) );
-                // pCbc->setReg( pRegNode, cReadItem.fValue );
-
-                if ( cIterationCounter == 5 )
-                {
-                    std::cout << RED <<  "ERROR !!!\nReadback Value still different after 5 iterations for Register : " << pRegNode << "\n" << std::hex << "Written Value : 0x" << +pValue << "\nReadback Value : 0x" << int( cRegItem.fValue ) << std::dec << std::endl;
-                    std::cout << "Register Adress : " << int( cRegItem.fAddress ) << std::endl;
-                    std::cout << "Cbc Id : " << +cCbcId << RESET << std::endl << std::endl;
-                    std::cout << BOLDRED << "Failed to write register in " << cIterationCounter << " trys! Giving up!" << RESET << std::endl;
-                }
-
-                EncodeReg( cWriteItem, cCbcId, cWrite_again );
-                cReadItem.fValue = 0;
-                EncodeReg( cReadItem, cCbcId, cRead_again );
-
-                fBoardFW->WriteCbcBlockReg( pCbc->getFeId(), cWrite_again );
-                fBoardFW->ReadCbcBlockReg( pCbc->getFeId(), cRead_again );
-
-                if ( cWrite_again != cRead_again )
-                {
-                    if ( cIterationCounter == 5 ) break;
-                    cVecWrite.clear();
-                    cVecWrite = cWrite_again;
-                    cVecRead.clear();
-                    cVecRead = cRead_again;
-                    cIterationCounter++;
-                }
-                else
-                {
-                    std::cout << BLUE << "Managed to write register correctly in " << cIterationCounter << " Iteration(s)!" << RESET << std::endl;
-                    cAllgood = true;
-                }
-            }
-            // mypause();
+            LOG (INFO) << "CBC " << +pCbc->getCbcId() << " " << cName << ": 0x" << std::hex << +cRegItem.fValue << std::dec ;
         }
-        else cAllgood = true;
-        if ( cAllgood ) return true;
-        else return false;
+
     }
-    else return true;
-}
 
-void CbcInterface::WriteCbcMultReg( Cbc* pCbc, const std::vector< std::pair<std::string, uint8_t> >& pVecReq, bool pVerifLoop )
-{
-    setBoard( pCbc->getBeBoardIdentifier() );
 
-    std::vector<uint32_t> cVecWrite;
-    std::vector<uint32_t> cVecRead;
-
-    CbcRegItem cRegItemWrite;
-    CbcRegItem cRegItemRead;
-
-    for ( const auto& v : pVecReq )
+    bool CbcInterface::WriteCbcReg ( Cbc* pCbc, const std::string& pRegNode, uint8_t pValue, bool pVerifLoop )
     {
-        cRegItemWrite = pCbc->getRegItem( v.first );
-        cRegItemWrite.fValue = v.second;
+        //first, identify the correct BeBoardFWInterface
+        setBoard ( pCbc->getBeBoardIdentifier() );
 
-        EncodeReg( cRegItemWrite, pCbc->getCbcId(), cVecWrite );
+        //next, get the reg item
+        CbcRegItem cRegItem = pCbc->getRegItem ( pRegNode );
+        cRegItem.fValue = pValue;
 
-        pCbc->setReg( v.first, cRegItemWrite.fValue );
+        //vector for transaction
+        std::vector<uint32_t> cVec;
 
-        if ( pVerifLoop )
-        {
-            cRegItemRead = pCbc->getRegItem( v.first );
-            cRegItemRead.fValue = 0;
+        // encode the reg specific to the FW, pVerifLoop decides if it should be read back, true means to write it
+        fBoardFW->EncodeReg ( cRegItem, pCbc->getCbcId(), cVec, pVerifLoop, true );
+        // write the registers, the answer will be in the same cVec
+        // the number of times the write operation has been attempted is given by cWriteAttempts
+        uint8_t cWriteAttempts = 0 ;
+        bool cSuccess = fBoardFW->WriteCbcBlockReg (  cVec, cWriteAttempts, pVerifLoop );
 
-            EncodeReg( cRegItemRead, pCbc->getCbcId(), cVecRead );
-        }
+        //update the HWDescription object
+        if (cSuccess)
+            pCbc->setReg ( pRegNode, pValue );
 
 #ifdef COUNT_FLAG
         fRegisterCount++;
+        fTransactionCount++;
 #endif
+
+        return cSuccess;
     }
 
-    fBoardFW->WriteCbcBlockReg( pCbc->getFeId(), cVecWrite );
+    bool CbcInterface::WriteCbcMultReg ( Cbc* pCbc, const std::vector< std::pair<std::string, uint8_t> >& pVecReq, bool pVerifLoop )
+    {
+        //first, identify the correct BeBoardFWInterface
+        setBoard ( pCbc->getBeBoardIdentifier() );
+
+        std::vector<uint32_t> cVec;
+
+        //Deal with the CbcRegItems and encode them
+        CbcRegItem cRegItem;
+
+        for ( const auto& cReg : pVecReq )
+        {
+            cRegItem = pCbc->getRegItem ( cReg.first );
+            cRegItem.fValue = cReg.second;
+
+            fBoardFW->EncodeReg ( cRegItem, pCbc->getCbcId(), cVec, pVerifLoop, true );
+#ifdef COUNT_FLAG
+            fRegisterCount++;
+#endif
+        }
+
+        // write the registers, the answer will be in the same cVec
+        // the number of times the write operation has been attempted is given by cWriteAttempts
+        uint8_t cWriteAttempts = 0 ;
+        bool cSuccess = fBoardFW->WriteCbcBlockReg (  cVec, cWriteAttempts, pVerifLoop );
 
 #ifdef COUNT_FLAG
-    fRegisterCount++;
+        fTransactionCount++;
 #endif
 
-
-    if ( pVerifLoop )
-    {
-        uint8_t cCbcId = pCbc->getCbcId();
-
-        fBoardFW->ReadCbcBlockReg( pCbc->getFeId(), cVecRead );
-
-        // only if I have a mismatch will i decode word by word and compare
-        if ( cVecWrite != cVecRead )
+        // if the transaction is successfull, update the HWDescription object
+        if (cSuccess)
         {
-            bool cAllgood = false;
-            int cIterationCounter = 1;
-            while ( !cAllgood )
+            for ( const auto& cReg : pVecReq )
             {
-                if ( cAllgood ) break;
-
-                std::vector<uint32_t> cWrite_again;
-                std::vector<uint32_t> cRead_again;
-
-                auto cMismatchWord = std::mismatch( cVecWrite.begin(), cVecWrite.end(), cVecRead.begin() );
-                while ( cMismatchWord.first != cVecWrite.end() )
-                {
-                    CbcRegItem cRegItemWrite;
-                    DecodeReg( cRegItemWrite, cCbcId, *cMismatchWord.first );
-                    CbcRegItem cRegItemRead;
-                    DecodeReg( cRegItemRead, cCbcId, *cMismatchWord.second );
-
-                    uint32_t index = std::distance( cVecWrite.begin(), cMismatchWord.first );
-                    std::string cMismatchName = pVecReq.at( index ).first;
-
-                    if ( cIterationCounter == 5 )
-                    {
-                        std::cout << RED << "\nERROR !!!\nReadback value not the same for Register : " << cMismatchName << " @ Page: " << int( cRegItemWrite.fPage ) << " Address: " << int( cRegItemWrite.fAddress ) << "\n"  << std::hex << "Written Value : 0x" << int( cRegItemWrite.fValue ) << "\nReadback Value : 0x" << int( cRegItemRead.fValue ) << std::dec << std::endl;
-                        std::cout << "Cbc Id : " << int( pCbc->getCbcId() ) << RESET << std::endl << std::endl;
-                        std::cout << BOLDRED << "Failed to write register in " << cIterationCounter << " trys! Giving up!" << RESET << std::endl;
-                    }
-                    cMismatchWord = std::mismatch( ++cMismatchWord.first, cVecWrite.end(), ++cMismatchWord.second );
-
-                    EncodeReg( cRegItemWrite, cCbcId, cWrite_again );
-                    cRegItemRead.fValue = 0;
-                    EncodeReg( cRegItemRead, cCbcId, cRead_again );
-                }
-
-                fBoardFW->WriteCbcBlockReg( pCbc->getFeId(), cWrite_again );
-                fBoardFW->ReadCbcBlockReg( pCbc->getFeId(), cRead_again );
-
-                if ( cWrite_again != cRead_again )
-                {
-                    if ( cIterationCounter == 5 ) break;
-                    cVecWrite.clear();
-                    cVecWrite = cWrite_again;
-                    cVecRead.clear();
-                    cVecRead = cRead_again;
-                    cIterationCounter++;
-                }
-                else
-                {
-                    std::cout << BLUE << "Managed to write all registers correctly in " << cIterationCounter << " Iteration(s)!" << RESET << std::endl;
-                    cAllgood = true;
-                }
+                cRegItem = pCbc->getRegItem ( cReg.first );
+                pCbc->setReg ( cReg.first, cReg.second );
             }
         }
+
+        return cSuccess;
     }
-}
 
 
 
-uint8_t CbcInterface::ReadCbcReg( Cbc* pCbc, const std::string& pRegNode )
-{
-
-    uint8_t cCbcId;
-    CbcRegItem cRegItem = pCbc->getRegItem( pRegNode );
-    std::vector<uint32_t> cVecReq;
-
-    setBoard( pCbc->getBeBoardIdentifier() );
-
-    EncodeReg( cRegItem, pCbc->getCbcId(), cVecReq );
-
-    fBoardFW->ReadCbcBlockReg( pCbc->getFeId(), cVecReq );
-
-    DecodeReg( cRegItem, cCbcId, cVecReq[0] );
-
-    pCbc->setReg( pRegNode, cRegItem.fValue );
-    return cRegItem.fValue;
-}
-
-
-void CbcInterface::ReadCbcMultReg( Cbc* pCbc, const std::vector<std::string>& pVecReg )
-{
-
-    CbcRegItem cRegItem;
-    std::vector<uint32_t> cVecReq;
-
-    setBoard( pCbc->getBeBoardIdentifier() );
-
-    for ( const auto& v : pVecReg )
-
-        EncodeReg( pCbc->getRegItem( v ) , pCbc->getCbcId(), cVecReq );
-
-    fBoardFW->ReadCbcBlockReg( pCbc->getFeId(), cVecReq );
-
-    int iReq = 0;
-    for ( const auto& v : pVecReg )
+    uint8_t CbcInterface::ReadCbcReg ( Cbc* pCbc, const std::string& pRegNode )
     {
-        DecodeReg( cRegItem, 0, cVecReq[iReq++] );
-        pCbc->setReg( v, cRegItem.fValue );
+        setBoard ( pCbc->getBeBoardIdentifier() );
+
+        CbcRegItem cRegItem = pCbc->getRegItem ( pRegNode );
+
+        std::vector<uint32_t> cVecReq;
+
+        fBoardFW->EncodeReg ( cRegItem, pCbc->getCbcId(), cVecReq, true, false );
+        fBoardFW->ReadCbcBlockReg (  cVecReq );
+
+        //bools to find the values of failed and read
+        bool cFailed = false;
+        bool cRead;
+        uint8_t cCbcId;
+        fBoardFW->DecodeReg ( cRegItem, cCbcId, cVecReq[0], cRead, cFailed );
+
+        if (!cFailed) pCbc->setReg ( pRegNode, cRegItem.fValue );
+
+        return cRegItem.fValue;
     }
-}
 
 
-void CbcInterface::ReadAllCbc( const Module* pModule )
-{
-    CbcRegItem cRegItem;
-    uint8_t cCbcId;
-    std::vector<uint32_t> cVecReq;
-    std::vector<std::string> cVecRegNode;
-
-    int cMissed = 0;
-
-    setBoard( pModule->getBeBoardIdentifier() );
-
-    for ( uint8_t i = 0; i < pModule->getNCbc(); i++ )
+    void CbcInterface::ReadCbcMultReg ( Cbc* pCbc, const std::vector<std::string>& pVecReg )
     {
+        //first, identify the correct BeBoardFWInterface
+        setBoard ( pCbc->getBeBoardIdentifier() );
 
-        if ( pModule->getCbc( i + cMissed ) == nullptr )
+        std::vector<uint32_t> cVec;
+
+        //Deal with the CbcRegItems and encode them
+        CbcRegItem cRegItem;
+
+        for ( const auto& cReg : pVecReg )
         {
-            i--;
-            cMissed++;
+            cRegItem = pCbc->getRegItem ( cReg );
+
+            fBoardFW->EncodeReg ( cRegItem, pCbc->getCbcId(), cVec, true, false );
+#ifdef COUNT_FLAG
+            fRegisterCount++;
+#endif
         }
 
-        else
+        // write the registers, the answer will be in the same cVec
+        fBoardFW->ReadCbcBlockReg ( cVec);
+
+#ifdef COUNT_FLAG
+        fTransactionCount++;
+#endif
+
+        bool cFailed = false;
+        bool cRead;
+        uint8_t cCbcId;
+        //update the HWDescription object with the value I just read
+        uint32_t idxReadWord = 0;
+
+        for ( const auto& cReg : pVecReg )
+            //for ( const auto& cReadWord : cVec )
         {
+            uint32_t cReadWord = cVec[idxReadWord++];
+            fBoardFW->DecodeReg ( cRegItem, cCbcId, cReadWord, cRead, cFailed );
 
-            Cbc* cCbc = pModule->getCbc( i + cMissed );
-
-            const CbcRegMap& cCbcRegMap = cCbc->getRegMap();
-
-            for ( auto& it : cCbcRegMap )
-            {
-                EncodeReg( it.second, cCbc->getCbcId(), cVecReq );
-                cVecRegNode.push_back( it.first );
-            }
-
-            fBoardFW->ReadCbcBlockReg( cCbc->getFeId(), cVecReq );
-
-            for ( uint32_t j = 0; j < cVecReq.size(); j++ )
-            {
-                DecodeReg( cRegItem, cCbcId, cVecReq[j] );
-
-                cCbc->setReg( cVecRegNode.at( j ), cRegItem.fValue );
-            }
+            // here I need to find the string matching to the reg item!
+            if (!cFailed)
+                pCbc->setReg ( cReg, cRegItem.fValue );
         }
     }
-}
 
 
-void CbcInterface::WriteBroadcast( const Module* pModule, const std::string& pRegNode, uint32_t pValue )
-{
-    setBoard( pModule->getBeBoardIdentifier() );
+    //void CbcInterface::ReadAllCbc ( const Module* pModule )
+    //{
+    //CbcRegItem cRegItem;
+    //uint8_t cCbcId;
+    //std::vector<uint32_t> cVecReq;
+    //std::vector<std::string> cVecRegNode;
 
-    uint8_t cCbcId = 0xFF;
-    std::vector<uint32_t> cVecReq;
+    //int cMissed = 0;
 
-    int cMissed = 0;
+    //setBoard ( pModule->getBeBoardIdentifier() );
 
-    for ( uint8_t i = 0; i < pModule->getNCbc(); i++ )
+    //for ( uint8_t i = 0; i < pModule->getNCbc(); i++ )
+    //{
+
+    //if ( pModule->getCbc ( i + cMissed ) == nullptr )
+    //{
+    //i--;
+    //cMissed++;
+    //}
+
+    //else
+    //{
+
+    //Cbc* cCbc = pModule->getCbc ( i + cMissed );
+
+    //const CbcRegMap& cCbcRegMap = cCbc->getRegMap();
+
+    //for ( auto& it : cCbcRegMap )
+    //{
+    //EncodeReg ( it.second, cCbc->getCbcId(), cVecReq );
+    //cVecRegNode.push_back ( it.first );
+    //}
+
+    //fBoardFW->ReadCbcBlockReg (  cVecReq );
+
+    //for ( uint32_t j = 0; j < cVecReq.size(); j++ )
+    //{
+    //DecodeReg ( cRegItem, cCbcId, cVecReq[j] );
+
+    //cCbc->setReg ( cVecRegNode.at ( j ), cRegItem.fValue );
+    //}
+    //}
+    //}
+    //}
+
+
+    void CbcInterface::WriteBroadcast ( const Module* pModule, const std::string& pRegNode, uint32_t pValue )
     {
-        if ( pModule->getCbc( i + cMissed ) == nullptr )
-        {
-            i--;
-            cMissed++;
-        }
+        //first set the correct BeBoard
+        setBoard ( pModule->getBeBoardIdentifier() );
 
-        /*
-           It makes the broadcast only the first time it finds an
-           existing Cbc and then update all the other Cbcs.
-         */
-        else if ( i == 0 && pModule->getCbc( i + cMissed ) != nullptr )
-        {
-            Cbc* cCbc = pModule->getCbc( i + cMissed );
-            CbcRegItem cRegItem = cCbc->getRegItem( pRegNode );
-            cRegItem.fValue = pValue;
+        CbcRegItem cRegItem = pModule->fCbcVector.at (0)->getRegItem ( pRegNode );
+        cRegItem.fValue = pValue;
 
-            EncodeReg( cRegItem, cCbcId, cVecReq );
+        //vector for transaction
+        std::vector<uint32_t> cVec;
 
-            fBoardFW->WriteCbcBlockReg( cCbc->getFeId(), cVecReq );
+        // encode the reg specific to the FW, pVerifLoop decides if it should be read back, true means to write it
+        // the 1st boolean could be true if I acually wanted to read back from each CBC but this somehow does not make sense!
+        fBoardFW->BCEncodeReg ( cRegItem, pModule->fCbcVector.size(), cVec, false, true );
 
-            ReadCbcReg( pModule->getCbc( i + cMissed ), pRegNode );
-        }
+        //true is the readback bit - the IC FW just checks that the transaction was successful and the
+        //Strasbourg FW does nothing
+        bool cSuccess = fBoardFW->BCWriteCbcBlockReg (  cVec, true );
 
-        else
-            ReadCbcReg( pModule->getCbc( i + cMissed ), pRegNode );
+#ifdef COUNT_FLAG
+        fRegisterCount++;
+        fTransactionCount++;
+#endif
+
+        //update the HWDescription object -- not sure if the transaction was successfull
+        if (cSuccess)
+            for (auto& cCbc : pModule->fCbcVector)
+                cCbc->setReg ( pRegNode, pValue );
     }
-}
 
-void CbcInterface::CbcHardReset( const Cbc* pCbc )
-{
-    setBoard( pCbc->getBeBoardIdentifier() );
+    void CbcInterface::WriteBroadcastMultReg (const Module* pModule, const std::vector<std::pair<std::string, uint8_t>> pVecReg)
+    {
+        //first set the correct BeBoard
+        setBoard ( pModule->getBeBoardIdentifier() );
 
-    fBoardFW->WriteReg( "cbc_hard_reset", 1 );
+        std::vector<uint32_t> cVec;
 
-    usleep( 200000 );
+        //Deal with the CbcRegItems and encode them
+        CbcRegItem cRegItem;
 
-    fBoardFW->WriteReg( "cbc_hard_reset", 0 );
+        for ( const auto& cReg : pVecReg )
+        {
+            cRegItem = pModule->fCbcVector.at (0)->getRegItem ( cReg.first );
+            cRegItem.fValue = cReg.second;
 
-    usleep( 200000 );
-}
+            fBoardFW->BCEncodeReg ( cRegItem, pModule->fCbcVector.size(), cVec, false, true );
+#ifdef COUNT_FLAG
+            fRegisterCount++;
+#endif
+        }
 
-void CbcInterface::CbcFastReset( const Cbc* pCbc )
-{
-    setBoard( pCbc->getBeBoardIdentifier() );
+        // write the registerss, the answer will be in the same cVec
+        bool cSuccess = fBoardFW->BCWriteCbcBlockReg ( cVec, true);
 
-    fBoardFW->WriteReg( "cbc_fast_reset", 1 );
+#ifdef COUNT_FLAG
+        fTransactionCount++;
+#endif
 
-    usleep( 200000 );
-
-    fBoardFW->WriteReg( "cbc_fast_reset", 0 );
-}
-
-
-void CbcInterface::EncodeReg( const CbcRegItem& pRegItem, uint8_t pCbcId, std::vector<uint32_t>& pVecReq )
-{
-    fBoardFW->EncodeReg( pRegItem, pCbcId, pVecReq );
-}
-
-
-void CbcInterface::DecodeReg( CbcRegItem& pRegItem, uint8_t pCbcId, uint32_t pWord )
-{
-    fBoardFW->DecodeReg( pRegItem, pCbcId, pWord );
-}
-
+        if (cSuccess)
+            for (auto& cCbc : pModule->fCbcVector)
+                for (auto& cReg : pVecReg)
+                {
+                    cRegItem = cCbc->getRegItem ( cReg.first );
+                    cCbc->setReg ( cReg.first, cReg.second );
+                }
+    }
 }

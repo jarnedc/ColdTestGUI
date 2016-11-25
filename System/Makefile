@@ -1,5 +1,5 @@
-Objs            = SystemController.o
-CC              = gcc
+Objs            = FileParser.o SystemController.o
+CC              = g++
 CXX             = g++
 CCFlags         = -g -O1 -w -Wall -pedantic -fPIC 
 #DevFlags                   = -D__CBCDAQ_DEV__

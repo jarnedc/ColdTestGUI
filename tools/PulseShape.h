@@ -94,7 +94,7 @@ private:
     /*!
     * \brief enable the test group
     */
-    void enableTestGroup();
+    void toggleTestGroup(bool pEnable);
 
     /*!
     * \brief fit the graph with the fitting function
@@ -136,7 +136,7 @@ private:
     uint8_t fVplus;/*!< Postamp  bias voltage */
     uint8_t fTestGroup; /*!< Number of the test group */
     uint8_t fTPAmplitude; /*!< Test pulse Amplitude */
-    uint32_t fDelayAfterPulse ; /*!< Delay after test pulse */
+    uint32_t fDelayAfterPulse ; // Delay after test pulse 
     uint32_t fChannel; /*!< channel number */
     uint8_t fOffset; /*!< Offset value for the channel */
     uint32_t fStepSize; /*!< Step size */
@@ -147,6 +147,13 @@ private:
         0x0, 0x8, 0x4, 0xc, 0x2, 0xa, 0x6, 0xe,
         0x1, 0x9, 0x5, 0xd, 0x3, 0xb, 0x7, 0xf,
     }; /*!< Lookup table for reverce the endianness */
+
+    const std::string getDelAfterTPString(const std::string pBoardIdentifier){
+         
+        if (pBoardIdentifier == "GLIB" || pBoardIdentifier == "CTA") return "COMMISSIONNING_MODE_DELAY_AFTER_TEST_PULSE";
+        else if (pBoardIdentifier == "ICGLIB" || pBoardIdentifier == "ICFC7") return "cbc_daq_ctrl.commissioning_cycle.test_pulse_count";
+        else return "not recognized";
+    }
 
 };
 

@@ -2,7 +2,7 @@
 #include <cmath>
 
 
-void SCurve::MakeTestGroups( bool pAllChan )
+void SCurve::MakeTestGroups ( bool pAllChan )
 {
     if ( !pAllChan )
     {
@@ -14,10 +14,13 @@ void SCurve::MakeTestGroups( bool pAllChan )
             {
                 int ctemp1 = idx * 16 + cGId * 2;
                 int ctemp2 = ctemp1 + 1;
-                if ( ctemp1 < 254 ) tempchannelVec.push_back( ctemp1 );
-                if ( ctemp2 < 254 )  tempchannelVec.push_back( ctemp2 );
+
+                if ( ctemp1 < 254 ) tempchannelVec.push_back ( ctemp1 );
+
+                if ( ctemp2 < 254 )  tempchannelVec.push_back ( ctemp2 );
 
             }
+
             fTestGroupChannelMap[cGId] = tempchannelVec;
 
         }
@@ -28,45 +31,47 @@ void SCurve::MakeTestGroups( bool pAllChan )
         std::vector<uint8_t> tempchannelVec;
 
         for ( int idx = 0; idx < 254; idx++ )
-            tempchannelVec.push_back( idx );
+            tempchannelVec.push_back ( idx );
+
         fTestGroupChannelMap[cGId] = tempchannelVec;
 
     }
 }
 
-void SCurve::setOffset( uint8_t pOffset, int  pGroup )
+void SCurve::setOffset ( uint8_t pOffset, int  pGroup )
 {
-    // std::cout << "Setting offsets of Test Group " << pGroup << " to 0x" << std::hex << +pOffset << std::dec << std::endl;
-  for ( auto cBoard : fBoardVector )
+    // LOG(INFO) << "Setting offsets of Test Group " << pGroup << " to 0x" << std::hex << +pOffset << std::dec ;
+    for ( auto cBoard : fBoardVector )
     {
-      for ( auto cFe : cBoard->fModuleVector )
-	{
-	  uint32_t cFeId = cFe->getFeId();
-	  
-	  for ( auto cCbc : cFe->fCbcVector )
-	    {
-	      uint32_t cCbcId = cCbc->getCbcId();
-	      
-	      RegisterVector cRegVec;   // vector of pairs for the write operation
-	      
-	      // loop the channels of the current group and toggle bit i in the global map
-	      for ( auto& cChannel : fTestGroupChannelMap[pGroup] )
-		{
-		  TString cRegName = Form( "Channel%03d", cChannel + 1 );
-		  cRegVec.push_back( {cRegName.Data(), pOffset} );
-		}
-	      fCbcInterface->WriteCbcMultReg( cCbc, cRegVec );
-	    }
-	}
+        for ( auto cFe : cBoard->fModuleVector )
+        {
+            //uint32_t cFeId = cFe->getFeId();
+
+            //for ( auto cCbc : cFe->fCbcVector )
+            //{
+            //uint32_t cCbcId = cCbc->getCbcId();
+
+            RegisterVector cRegVec;   // vector of pairs for the write operation
+
+            // loop the channels of the current group and toggle bit i in the global map
+            for ( auto& cChannel : fTestGroupChannelMap[pGroup] )
+            {
+                TString cRegName = Form ( "Channel%03d", cChannel + 1 );
+                cRegVec.push_back ( {cRegName.Data(), pOffset} );
+            }
+
+            fCbcInterface->WriteBroadcastMultReg ( cFe, cRegVec );
+            //}
+        }
     }
 }
 
 
-void SCurve::measureSCurves( int  pTGrpId )
+void SCurve::measureSCurves ( int  pTGrpId )
 {
     // Adaptive Loop to measure SCurves
 
-    std::cout << BOLDGREEN << "Measuring SCurves sweeping VCth ... " << RESET <<  std::endl;
+    LOG (INFO) << BOLDGREEN << "Measuring SCurves sweeping VCth ... " << RESET <<  std::endl;
 
     // Necessary variables
     bool cNonZero = false;
@@ -74,6 +79,7 @@ void SCurve::measureSCurves( int  pTGrpId )
     uint32_t cAllOneCounter = 0;
     uint8_t cValue, cDoubleValue;
     int cStep;
+    uint8_t cIterationCount = 0;
 
     // the expression below mimics XOR
     if ( fHoleMode )
@@ -90,8 +96,15 @@ void SCurve::measureSCurves( int  pTGrpId )
     // Adaptive VCth loop
     while ( 0x00 <= cValue && cValue <= 0xFF )
     {
+        if (cIterationCount > 0 && (cValue == 0xFF || cValue == 0x00) )
+        {
+            LOG (INFO) << BOLDRED << "ERROR: something wrong with these SCurves"  << RESET ;
+            break;
+        }
+
         // DEBUG
         if ( cAllOne ) break;
+
         if ( cValue == cDoubleValue )
         {
             cValue +=  cStep;
@@ -99,73 +112,78 @@ void SCurve::measureSCurves( int  pTGrpId )
         }
 
 
-        CbcRegWriter cWriter( fCbcInterface, "VCth", cValue );
-        accept( cWriter );
+        //CbcRegWriter cWriter ( fCbcInterface, "VCth", cValue );
+        //accept ( cWriter );
 
 
         uint32_t cN = 1;
         uint32_t cNthAcq = 0;
         uint32_t cHitCounter = 0;
 
-	// DEBUG
-	if ( cAllOne ) break;
+        // DEBUG
+        if ( cAllOne ) break;
 
-	for ( BeBoard* pBoard : fBoardVector )
-	  {
-	    Counter cCounter;
-	    pBoard->accept( cCounter );
-	    
-	    fBeBoardInterface->Start( pBoard );
-	    
-	    while ( cN <= fEventsPerPoint )
-	      {
-		// Run( pBoard, cNthAcq );
-		fBeBoardInterface->ReadData( pBoard, cNthAcq, false );
-		const std::vector<Event*>& events = fBeBoardInterface->GetEvents( pBoard );
-		
-		// Loop over Events from this Acquisition
-		for ( auto& ev : events )
-		  {
-		    cHitCounter += fillSCurves( pBoard, ev, cValue, pTGrpId ); //pass test group here
-		    cN++;
-		  }
-		cNthAcq++;
-	      }
-	    fBeBoardInterface->Stop( pBoard, cNthAcq );
-	    
-	    // std::cout << "DEBUG Vcth " << int( cValue ) << " Hits " << cHitCounter << " and should be " <<  0.95 * fEventsPerPoint*   cCounter.getNCbc() * fTestGroupChannelMap[pTGrpId].size() << std::endl;
-	    
-	    // check if the hitcounter is all ones
-	    if ( cNonZero == false && cHitCounter != 0 )
-	      {
-		cDoubleValue = cValue;
-		cNonZero = true;
-		if ( cValue == 255 ) cValue = 255;
-		else if ( cValue == 0 ) cValue = 0;
-		else cValue -= cStep;
-		cStep /= 10;
-		std::cout << GREEN << "Found > 0 Hits!, Falling back to " << +cValue  <<  RESET << std::endl;
-		continue;
-	      }
-	    // the above counter counted the CBC objects connected to pBoard
-	    if ( cHitCounter > 0.95 * fEventsPerPoint  * fNCbc * fTestGroupChannelMap[pTGrpId].size() ) cAllOneCounter++;
-	    if ( cAllOneCounter >= 10 )
-	      {
-		cAllOne = true;
-		std::cout << RED << "Found maximum occupancy 10 times, SCurves finished! " << RESET << std::endl;
-	      }
-	    if ( cAllOne ) break;
-	    cValue += cStep;
-	  }
+        for ( BeBoard* pBoard : fBoardVector )
+        {
+            for (Module* cFe : pBoard->fModuleVector)
+                fCbcInterface->WriteBroadcast (cFe, "VCth", cValue);
+
+            fBeBoardInterface->ReadNEvents ( pBoard, fEventsPerPoint );
+
+            const std::vector<Event*>& events = fBeBoardInterface->GetEvents ( pBoard );
+
+            // Loop over Events from this Acquisition
+            for ( auto& ev : events )
+            {
+                cHitCounter += fillSCurves ( pBoard, ev, cValue, pTGrpId ); //pass test group here
+                cN++;
+            }
+
+            cNthAcq++;
+            //Counter cCounter;
+            //pBoard->accept ( cCounter );
+
+            //LOG(INFO) << "DEBUG Vcth " << int ( cValue ) << " Hits " << cHitCounter << " and should be " <<  0.95 * fEventsPerPoint*   cCounter.getNCbc() * fTestGroupChannelMap[pTGrpId].size() ;
+
+            // check if the hitcounter is all ones
+            if ( cNonZero == false && cHitCounter != 0 )
+            {
+                cDoubleValue = cValue;
+                cNonZero = true;
+
+                if ( cValue == 255 ) cValue = 255;
+                else if ( cValue == 0 ) cValue = 0;
+                else cValue -= cStep;
+
+                cStep /= 10;
+                LOG (INFO) << GREEN << "Found > 0 Hits!, Falling back to " << +cValue  <<  RESET ;
+                continue;
+            }
+
+            // the above counter counted the CBC objects connected to pBoard
+            if ( cHitCounter > 0.95 * fEventsPerPoint  * fNCbc * fTestGroupChannelMap[pTGrpId].size() ) cAllOneCounter++;
+
+            if ( cAllOneCounter >= 10 )
+            {
+                cAllOne = true;
+                LOG (INFO) << RED << "Found maximum occupancy 10 times, SCurves finished! " << RESET ;
+            }
+
+            if ( cAllOne ) break;
+
+            cValue += cStep;
+        }
+
+        cIterationCount++;
     }
 } // end of VCth loop
 
 
-void SCurve::measureSCurvesOffset( int  pTGrpId )
+void SCurve::measureSCurvesOffset ( int  pTGrpId )
 {
     // Adaptive Loop to measure SCurves
 
-    std::cout << BOLDGREEN << "Measuring SCurves sweeping Channel Offsets ... " << RESET << std::endl;
+    LOG (INFO) << BOLDGREEN << "Measuring SCurves sweeping Channel Offsets ... " << RESET ;
 
     // Necessary variables
     bool cNonZero = false;
@@ -191,160 +209,165 @@ void SCurve::measureSCurvesOffset( int  pTGrpId )
     {
         // DEBUG
         if ( cAllOne ) break;
+
         if ( cValue == cDoubleValue )
         {
             cValue +=  cStep;
             continue;
         }
 
-        setOffset( cValue, pTGrpId ); //need to pass on the testgroup
+        setOffset ( cValue, pTGrpId ); //need to pass on the testgroup
 
         uint32_t cN = 1;
         uint32_t cNthAcq = 0;
         uint32_t cHitCounter = 0;
 
-	// DEBUG
-	if ( cAllOne ) break;
+        // DEBUG
+        if ( cAllOne ) break;
 
-	for ( BeBoard* pBoard : fBoardVector )
-	  {
-	    Counter cCounter;
-	    pBoard->accept( cCounter );
+        for ( BeBoard* pBoard : fBoardVector )
+        {
+            //Counter cCounter;
+            //pBoard->accept ( cCounter );
 
-	    fBeBoardInterface->Start( pBoard );
-	    
-	    while ( cN <= fEventsPerPoint )
-	      {
-		// Run( pBoard, cNthAcq );
-		fBeBoardInterface->ReadData( pBoard, cNthAcq, false );
-		const std::vector<Event*>& events = fBeBoardInterface->GetEvents( pBoard );
-		
-		// Loop over Events from this Acquisition
-		for ( auto& ev : events )
-		  {
-		    cHitCounter += fillSCurves( pBoard, ev, cValue, pTGrpId ); //pass test group here
-		    cN++;
-		  }
-		cNthAcq++;
-	      }
-	    fBeBoardInterface->Stop( pBoard, cNthAcq );
-	    
-	    // std::cout << "DEBUG Vcth " << int( cValue ) << " Hits " << cHitCounter << " and should be " <<  0.95 * fEventsPerPoint*   cCounter.getNCbc() * fTestGroupChannelMap[pTGrpId].size() << std::endl;
-	    
-	    // check if the hitcounter is all ones
-	    if ( cNonZero == false && cHitCounter != 0 )
-	      {
-		cDoubleValue = cValue;
-		cNonZero = true;
-		if ( cValue == 255 ) cValue = 255;
-		else if ( cValue == 0 ) cValue = 0;
-		else cValue -= 1.5 * cStep;
-		cStep /= 10;
-		std::cout << GREEN << "Found > 0 Hits!, Falling back to " << +cValue  <<  RESET << std::endl;
-		continue;
-	      }
-	    // the above counter counted the CBC objects connected to pBoard
-	    if ( cHitCounter > 0.95 * fEventsPerPoint  * fNCbc * fTestGroupChannelMap[pTGrpId].size() ) cAllOneCounter++;
-	    if ( cAllOneCounter >= 10 )
-	      {
-		cAllOne = true;
-		std::cout << RED << "Found maximum occupancy 10 times, SCurves finished! " << RESET << std::endl;
-	      }
-	    if ( cAllOne ) break;
-	    cValue += cStep;
-	  }
+            fBeBoardInterface->ReadNEvents ( pBoard, fEventsPerPoint );
+            const std::vector<Event*>& events = fBeBoardInterface->GetEvents ( pBoard );
+
+            // Loop over Events from this Acquisition
+            for ( auto& ev : events )
+            {
+                cHitCounter += fillSCurves ( pBoard, ev, cValue, pTGrpId ); //pass test group here
+                cN++;
+            }
+
+            cNthAcq++;
+
+            // LOG(INFO) << "DEBUG Vcth " << int( cValue ) << " Hits " << cHitCounter << " and should be " <<  0.95 * fEventsPerPoint*   cCounter.getNCbc() * fTestGroupChannelMap[pTGrpId].size() ;
+
+            // check if the hitcounter is all ones
+            if ( cNonZero == false && cHitCounter != 0 )
+            {
+                cDoubleValue = cValue;
+                cNonZero = true;
+
+                if ( cValue == 255 ) cValue = 255;
+                else if ( cValue == 0 ) cValue = 0;
+                else cValue -= 1.5 * cStep;
+
+                cStep /= 10;
+                LOG (INFO) << GREEN << "Found > 0 Hits!, Falling back to " << +cValue  <<  RESET ;
+                continue;
+            }
+
+            // the above counter counted the CBC objects connected to pBoard
+            if ( cHitCounter > 0.95 * fEventsPerPoint  * fNCbc * fTestGroupChannelMap[pTGrpId].size() ) cAllOneCounter++;
+
+            if ( cAllOneCounter >= 10 )
+            {
+                cAllOne = true;
+                LOG (INFO) << RED << "Found maximum occupancy 10 times, SCurves finished! " << RESET ;
+            }
+
+            if ( cAllOne ) break;
+
+            cValue += cStep;
+        }
     } // end of VCth loop
-    setOffset( cStartValue, pTGrpId );
+
+    setOffset ( cStartValue, pTGrpId );
 }
 
-void SCurve::initializeSCurves( TString pParameter, uint8_t pValue, int  pTGrpId )
+void SCurve::initializeSCurves ( TString pParameter, uint8_t pValue, int  pTGrpId )
 {
     // Just call the initializeHist method of every channel and tell it what we are varying
     for ( auto& cCbc : fCbcChannelMap )
     {
         std::vector<uint8_t> cTestGrpChannelVec = fTestGroupChannelMap[pTGrpId];
+
         for ( auto& cChanId : cTestGrpChannelVec )
-            ( cCbc.second.at( cChanId ) ).initializeHist( pValue, pParameter );
+            ( cCbc.second.at ( cChanId ) ).initializeHist ( pValue, pParameter );
     }
-    std::cout << "SCurve Histograms for " << pParameter << " =  " << int( pValue ) << " initialized!" << std::endl;
+
+    LOG (INFO) << "SCurve Histograms for " << pParameter << " =  " << int ( pValue ) << " initialized!" ;
 }
 
-uint32_t SCurve::fillSCurves( BeBoard* pBoard,  const Event* pEvent, uint8_t pValue, int  pTGrpId, bool pDraw )
+uint32_t SCurve::fillSCurves ( BeBoard* pBoard,  const Event* pEvent, uint8_t pValue, int  pTGrpId, bool pDraw )
 {
     // loop over all FEs on board, check if channels are hit and if so , fill pValue in the histogram of Channel
     uint32_t cHitCounter = 0;
+
     for ( auto cFe : pBoard->fModuleVector )
     {
 
         for ( auto cCbc : cFe->fCbcVector )
         {
 
-            CbcChannelMap::iterator cChanVec = fCbcChannelMap.find( cCbc );
+            CbcChannelMap::iterator cChanVec = fCbcChannelMap.find ( cCbc );
+
             if ( cChanVec != fCbcChannelMap.end() )
             {
                 const std::vector<uint8_t>& cTestGrpChannelVec = fTestGroupChannelMap[pTGrpId];
+
                 for ( auto& cChanId : cTestGrpChannelVec )
                 {
-                    if ( pEvent->DataBit( cFe->getFeId(), cCbc->getCbcId(), cChanVec->second.at( cChanId ).fChannelId ) )
+                    if ( pEvent->DataBit ( cFe->getFeId(), cCbc->getCbcId(), cChanVec->second.at ( cChanId ).fChannelId ) )
                     {
-                        cChanVec->second.at( cChanId ).fillHist( pValue );
+                        cChanVec->second.at ( cChanId ).fillHist ( pValue );
                         cHitCounter++;
                     }
 
                 }
             }
-            else std::cout << RED << "Error: could not find the channels for CBC " << int( cCbc->getCbcId() ) << RESET << std::endl;
+            else LOG (INFO) << RED << "Error: could not find the channels for CBC " << int ( cCbc->getCbcId() ) << RESET ;
         }
     }
+
     return cHitCounter;
 }
 
 
-void SCurve::setSystemTestPulse( uint8_t pTPAmplitude, uint8_t pTestGroup )
+void SCurve::setSystemTestPulse ( uint8_t pTPAmplitude, uint8_t pTestGroup )
 {
     std::vector<std::pair<std::string, uint8_t>> cRegVec;
-    uint8_t cRegValue =  to_reg( 0, pTestGroup );
+    uint8_t cRegValue =  to_reg ( 0, pTestGroup );
 
-    cRegVec.push_back( std::make_pair( "SelTestPulseDel&ChanGroup",  cRegValue ) );
+    cRegVec.push_back ( std::make_pair ( "SelTestPulseDel&ChanGroup",  cRegValue ) );
 
     //set the value of test pulsepot registrer and MiscTestPulseCtrl&AnalogMux register
     if ( fHoleMode )
-        cRegVec.push_back( std::make_pair( "MiscTestPulseCtrl&AnalogMux", 0xD1 ) );
+        cRegVec.push_back ( std::make_pair ( "MiscTestPulseCtrl&AnalogMux", 0xD1 ) );
     else
-        cRegVec.push_back( std::make_pair( "MiscTestPulseCtrl&AnalogMux", 0x61 ) );
+        cRegVec.push_back ( std::make_pair ( "MiscTestPulseCtrl&AnalogMux", 0x61 ) );
 
-    cRegVec.push_back( std::make_pair( "TestPulsePot", pTPAmplitude ) );
+    cRegVec.push_back ( std::make_pair ( "TestPulsePot", pTPAmplitude ) );
     // cRegVec.push_back( std::make_pair( "Vplus",  fVplus ) );
-    CbcMultiRegWriter cWriter( fCbcInterface, cRegVec );
-    this->accept( cWriter );
+    CbcMultiRegWriter cWriter ( fCbcInterface, cRegVec );
+    this->accept ( cWriter );
     // CbcRegReader cReader( fCbcInterface, "MiscTestPulseCtrl&AnalogMux" );
     // this->accept( cReader );
     // cReader.setRegister( "TestPulsePot" );
     // this->accept( cReader );
 }
 
-
-void SCurve::dumpConfigFiles()
+void SCurve::setFWTestPulse()
 {
-    // visitor to call dumpRegFile on each Cbc
-    struct RegMapDumper : public HwDescriptionVisitor
+    for (auto& cBoard : fBoardVector)
     {
-        std::string fDirectoryName;
-        RegMapDumper( std::string pDirectoryName ): fDirectoryName( pDirectoryName ) {};
-        void visit( Cbc& pCbc )
+        std::vector<std::pair<std::string, uint32_t> > cRegVec;
+        std::string cBoardType = cBoard->getBoardType();
+
+        if (cBoardType == "GLIB" || cBoardType == "CTA")
         {
-            if ( !fDirectoryName.empty() )
-            {
-                TString cFilename = fDirectoryName + Form( "/FE%dCBC%d.txt", pCbc.getFeId(), pCbc.getCbcId() );
-                // cFilename += Form( "/FE%dCBC%d.txt", pCbc.getFeId(), pCbc.getCbcId() );
-                pCbc.saveRegMap( cFilename.Data() );
-            }
-            else std::cout << "Error: no results Directory initialized! "  << std::endl;
+            cRegVec.push_back ({"COMMISSIONNING_MODE_RQ", 1 });
+            cRegVec.push_back ({"COMMISSIONNING_MODE_CBC_TEST_PULSE_VALID", 1 });
         }
-    };
+        else if (cBoardType == "ICGLIB" || cBoardType == "ICFC7")
+        {
+            cRegVec.push_back ({"cbc_daq_ctrl.commissioning_cycle.mode_flags.enable", 1 });
+            cRegVec.push_back ({"cbc_daq_ctrl.commissioning_cycle.mode_flags.test_pulse_enable", 1 });
+            cRegVec.push_back ({"cbc_daq_ctrl.commissioning_cycle_ctrl", 0x1 });
+        }
 
-    RegMapDumper cDumper( fDirectoryName );
-    accept( cDumper );
-
-    std::cout << BOLDBLUE << "Configfiles for all Cbcs written to " << fDirectoryName << RESET << std::endl;
+        fBeBoardInterface->WriteBoardMultReg (cBoard, cRegVec);
+    }
 }
