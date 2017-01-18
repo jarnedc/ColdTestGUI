@@ -502,7 +502,7 @@ int main ( int argc, char* argv[] )
     if ( batchMode ) gROOT->SetBatch ( true );
     else TQObject::Connect ( "TCanvas", "Closed()", "TApplication", &cApp, "Terminate()" );
 
-
+    
     // set all test flags ON if all flag set in arguments passed to tester.
     if ( cAll )
     {
@@ -516,6 +516,11 @@ int main ( int argc, char* argv[] )
     //Start server to communicate with HMP404 instrument via usbtmc and SCPI
     pid_t childPid;  // the child process that the execution will soon run inside of.
     childPid = fork();
+ 
+    bool currentConsumptionTest_passed = false;
+    bool registerReadWriteTest_passed = false;
+    bool shortFinder_passed =false;
+    
 
     if (childPid < 0) // fork failed
     {
@@ -560,6 +565,15 @@ int main ( int argc, char* argv[] )
             cTool.StartHttpServer();
             cTool.ConfigureHw (outp );
             cTool.CreateReport();
+/*	    std::cout << "first read of the registers: " << std::endl;
+   	    for (auto& cBoard : cTool.fBoardVector)
+            {
+            for (auto& cFe : cBoard->fModuleVector)
+            {
+                for (auto cCbc : cFe->fCbcVector)
+                    cTool.fCbcInterface->ReadCbc (cCbc);
+            }
+           }	*/
             LOG (INFO) << outp.str();
 
             char line[120];
@@ -568,7 +582,7 @@ int main ( int argc, char* argv[] )
             if ( cCurrents )
             {
                 t.start();
-                bool currentConsumptionTest_passed = check_CurrentConsumption (cTool , cNumCBCs , cHostname , zmqPortNumber, httpPortNumber, cInterval);
+                currentConsumptionTest_passed = check_CurrentConsumption (cTool , cNumCBCs , cHostname , zmqPortNumber, httpPortNumber, cInterval);
                 cTool.AmmendReport ( ( currentConsumptionTest_passed) ? ("# Current consumption test passed.") : ("# Current consumption test failed.") );
                 t.stop();
                 sprintf (line, "# %.3f s required to check current consumption on low voltage power supply.", t.getElapsedTime() );
@@ -585,7 +599,8 @@ int main ( int argc, char* argv[] )
                     cTool.SaveResults();
                     cTool.CloseResultFile();
                     cTool.Destroy();
-                    exit (0);
+                     std::cout << "the exit value is: " << 2 << std::endl;
+		     exit (2);
                 }
 
             }
@@ -594,7 +609,7 @@ int main ( int argc, char* argv[] )
             if ( cRegisters )
             {
                 t.start();
-                bool registerReadWriteTest_passed = check_Registers (&cTool);
+                registerReadWriteTest_passed = check_Registers (&cTool);
                 t.stop();
                 sprintf (line, "# %.3f s required to check register WRITE operation.", t.getElapsedTime() );
                 cTool.AmmendReport ( line);
@@ -609,7 +624,8 @@ int main ( int argc, char* argv[] )
                     cTool.SaveResults();
                     cTool.CloseResultFile();
                     cTool.Destroy();
-                    exit (0);
+                    std::cout << "the exit value is: " << 3 << std::endl;
+		    exit (3);
                 }
             }
 
@@ -625,6 +641,7 @@ int main ( int argc, char* argv[] )
                 cTool.AmmendReport ( line);
 
                 t.show ( "Calibration of the DUT" );
+
             }
 
             // look for shorts on the DUT if --checkShorts flag set in arguments passed to tester
@@ -643,10 +660,10 @@ int main ( int argc, char* argv[] )
                     cTool.AmmendReport ( line);
                     t.show ( "Calibration of the DUT" );
                 }
-
+	
                 LOG (INFO) << "Starting short(s) test." ;
                 t.start();
-                bool shortFinder_passed = check_Shorts (&cTool, cMaxNumShorts);
+                shortFinder_passed = check_Shorts (&cTool, cMaxNumShorts);
                 t.stop();
                 sprintf (line, "# %.3f s required to identify shorts on DUT.", t.getElapsedTime() );
                 cTool.AmmendReport ( line);
@@ -661,7 +678,8 @@ int main ( int argc, char* argv[] )
                     cTool.SaveResults();
                     cTool.CloseResultFile();
                     cTool.Destroy();
-                    exit (0);
+                    std::cout << "the exit value is: " << 4 << std::endl;
+		    exit (4);
                 }
             }
 
@@ -735,9 +753,17 @@ int main ( int argc, char* argv[] )
             exit (1);
         }
     }
-
+    
 
     if ( !batchMode ) cApp.Run();
-
-    return 0;
+/*
+    if(cCurrents && cRegisters && cShorts && !currentConsumptionTest_passed && !registerReadWriteTest_passed && !shortFinder_passed){return 8;}
+    else if(cCurrents && cRegisters && !currentConsumptionTest_passed && !registerReadWriteTest_passed){return 9;}
+    else if(cCurrents && cShorts && !currentConsumptionTest_passed && !shortFinder_passed){return 10;}
+    else if(cRegisters && cShorts && !registerReadWriteTest_passed && !shortFinder_passed){return 11;}
+    else if(cCurrents && !currentConsumptionTest_passed){return 5;}
+    else if(cRegisters && !registerReadWriteTest_passed){return 6;}
+    else if(cShorts && !shortFinder_passed){return 7;}
+*/    
+    else{return 0;}
 }
