@@ -107,8 +107,13 @@ IntegratedTesterGui::IntegratedTesterGui(const TGWindow *p, UInt_t w, UInt_t h)
   fTopVertical->AddFrame(fGframe3,new TGLayoutHints(kLHintsExpandX|kLHintsTop,
                                              2,2,2,2));
 */
-   fMain->AddFrame(fTopVertical,new TGLayoutHints(kLHintsExpandX|kLHintsExpandY,
-                                             2,2,2,2));
+
+   //--======================TEXT EDIT==============================--//
+   //define the textedit for the serial number
+   fTextEntry = new TGTextEntry(fTopVertical, new TGTextBuffer(100));
+   fTopVertical->AddFrame(fTextEntry, new TGLayoutHints(kLHintsExpandX | kLHintsCenterY, 5, 5, 5, 5));
+
+   fMain->AddFrame(fTopVertical,new TGLayoutHints(kLHintsExpandX|kLHintsExpandY, 2,2,2,2));
    //Default state
    fButtonGroup->SetState(kTRUE);
    fMain->SetWindowName("2CBC/8CBC Hybrid calibration");
@@ -178,10 +183,11 @@ void IntegratedTesterGui::integratedtesterAfterRetestSelected()
 {
    //user clicked the Proceed with the test button
    int DateAndTime = returnDateAndTime(); 
+   string SerialNumberScanned = fTextEntry->GetText();
    DisactivateTestButton();
    state->SetText("TEST RUNNING");
    fGframe->Layout(); 
-   SerialNumberLabel->SetText(ReadSerialNumberFromFile().c_str());
+   SerialNumberLabel->SetText(SerialNumberScanned.c_str());
    fGframe2->Layout();  
    gSystem->ProcessEvents();
    int nrCBCs = 0;
@@ -201,7 +207,7 @@ void IntegratedTesterGui::integratedtesterAfterRetestSelected()
    	TestSummaryLabel->SetText(ReadCompleteFile(string(Summaryfile)).c_str());
    	TestSummaryLabel->Layout();
    }
-   WriteResultsTestToDB(outcomeOfIntegratedTester);
+   WriteResultsTestToDB(SerialNumberScanned,outcomeOfIntegratedTester);
    ActivateTestButton();
 }
 
@@ -386,13 +392,13 @@ std::string IntegratedTesterGui::ReadSerialNumberFromFile()
   std::cout << "serial_number from file: " << serial_number << '\n';
   return serial_number;
 }
-void IntegratedTesterGui::WriteResultsTestToDB(int status)
+void IntegratedTesterGui::WriteResultsTestToDB(string serialNumber, int status)
 {
    std::string serial_number = ReadSerialNumberFromFile();
    std::cout << "serial number that will be written to DB: " << serial_number << std::endl;
    std::ofstream ofs;
    ofs.open(dataBasePath,std::ofstream::out | std::ofstream::app);
-   ofs << time(NULL) << "," << serial_number << "," << status << std::endl;
+   ofs << time(NULL) << "," << serialNumber << "," << status << std::endl;
 }
 
 //read the database and checks wether the calibration was succesful

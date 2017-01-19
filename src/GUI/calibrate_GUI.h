@@ -14,16 +14,7 @@
 #include <string> 
 #include <sstream>
 #include <TSystem.h>
-#include <TCanvas.h>
-#include <TGClient.h>
-#include <TH1F.h>
-#include <TRandom.h>
-#include <TGFrame.h>
-#include <TRootEmbeddedCanvas.h>
-#include <RQ_OBJECT.h>
-#include <TFile.h>
-#include <ctime>
-#include "TGTextEntry.h"
+
 const char * dataBasePath = "/root/Ph2_ACF_v1.40/Ph2_ACF/src/GUI/database.txt";
 const char * serialNumberPath = "/root/Ph2_ACF_v1.40/Ph2_ACF/src/GUI/serial_number.txt";
 const char * logPath = "/root/Ph2_ACF_v1.40/Ph2_ACF/src/GUI/log.txt";
@@ -37,20 +28,9 @@ public:
    ~IDList() {}
    Int_t GetUnID(void) { return ++nID; }
 };
-class IntegratedTesterGui : public TGMainFrame {
-   RQ_OBJECT("IntegratedTesterGui")
+class MyButtonTest : public TGMainFrame {
 private:
-   TGMainFrame         *fMain;
-   TGVerticalFrame *fTopVertical;
-   TRootEmbeddedCanvas *fEcanvas;
-   TRootEmbeddedCanvas *fEcanvas1;
-   TRootEmbeddedCanvas *fEcanvas2;
-   TRootEmbeddedCanvas *fEcanvas3;
-   TGHorizontalFrame *HorFramePlots;
-   TGVerticalFrame *VerFramePlots1;
-   TGVerticalFrame *VerFramePlots2;
    //TGText              *StatusDisplay; //Displays the status of the calibration
-   TGVerticalFrame *fForButtons; 
    TGTextButton        *fExit;         // Exit text button
    TGTextButton        *fCalibration;  //Calibration text button
    TGTextButton        *fRedoCalibration;      //Text button to redo the calibration for the current hybrid
@@ -61,45 +41,22 @@ private:
    TGLabel             *state;        // Label showing the state of the test
    TGLabel             *SerialNumberLabel; //Label showing the serial number of the hybrid that was scanned
    TGLabel             *serialNumber; //label showing the SerialNumber of the hybrid. This number is read from a file serial_number.txt
-   TGLabel 		*TestSummary;
    TGGroupFrame        *fGframe;
    TGGroupFrame        *fGframe2;
-   TGGroupFrame        *fGframe3;
-   TGLabel		*TestSummaryLabel;
-   TGTextEntry 		*fTextEntry;
-
-   TGLabel		*AlreadyTestedPopUpLabel;
-   TGMainFrame		*fPopUp;
-   TGVerticalFrame	*fPopupTopVertical;
-   TGTextButton		*fProceed;
-   TGTextButton 	*fCancelTest;
-   TGHorizontalFrame	*fHorFrameForPopUpButtons;
 public:
-   IntegratedTesterGui(const TGWindow *p, UInt_t w, UInt_t h);
-   virtual ~IntegratedTesterGui();
-   bool hybridAlreadyTested();
-   void DoAlreadyTestedPopUp();
-   void TranslateReturnValue(int);
-   void DisactivateTestButton();
-   void ActivateTestButton();
+   MyButtonTest(const TGWindow *p, UInt_t w, UInt_t h);
+   virtual ~MyButtonTest();
    void DoExit(void);
-   void DoDraw(int);
-   void integratedtester();
+   void Calibrate(void);
    void WriteInfo(std::string);
-   int returnDateAndTime();
-   std::string ReadCompleteFile(std::string);
    std::string ReadSerialNumberFromFile();
-   void WriteResultsTestToDB(string,int);
+   void WriteResultsTestToDB(int);
    void SetGroupEnabled(Bool_t);
    std::string * ReadDBLastLine();
    //void HandleReturn();
-   int runIntegratedTester(int, int);
+   bool run_calibration(int);
    const char * serialNumber_char;
    //std::string configXML = "settings/Calibration_8CBC.xml";
-   ClassDef(IntegratedTesterGui, 0)
+   ClassDef(MyButtonTest, 0)
    ofstream logbook;
-
-   void ClosePopUp();
-   void integratedtesterAfterRetestSelected();
-   void ClosePopUpAndProceedWithTest();
 };

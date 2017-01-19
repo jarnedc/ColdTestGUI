@@ -163,9 +163,9 @@ void Tool::CreateResultDirectory ( const std::string& pDirname, bool pDate )
 
     std::string nDirname = pDirname;
 
-    if ( cCheck ) nDirname +=  cMode;
+    //if ( cCheck ) nDirname +=  cMode;
 
-    if ( pDate ) nDirname +=  currentDateTime();
+    //if ( pDate ) nDirname +=  currentDateTime();
 
     LOG (INFO)  << "Creating directory: " << nDirname  ;
     std::string cCommand = "mkdir -p " + nDirname;
