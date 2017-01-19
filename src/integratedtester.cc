@@ -616,7 +616,8 @@ int main ( int argc, char* argv[] )
                 t.show ( "Read/Write register test of the DUT" );
 
                 // if DUT fails register R&W test then stop here.
-                if ( !registerReadWriteTest_passed )
+                std::cout << "registerReadWriteTest_passed at test: " << registerReadWriteTest_passed << std::endl;
+		if ( !registerReadWriteTest_passed )
                 {
                     LOG (INFO) << BOLDRED << "Hybrid did not pass register check. Stopping tester." << rst ;
                     LOG (INFO) << BOLDBLUE <<  "Stopping DUT tester!" << rst ;
@@ -756,14 +757,13 @@ int main ( int argc, char* argv[] )
     
 
     if ( !batchMode ) cApp.Run();
-/*
-    if(cCurrents && cRegisters && cShorts && !currentConsumptionTest_passed && !registerReadWriteTest_passed && !shortFinder_passed){return 8;}
-    else if(cCurrents && cRegisters && !currentConsumptionTest_passed && !registerReadWriteTest_passed){return 9;}
-    else if(cCurrents && cShorts && !currentConsumptionTest_passed && !shortFinder_passed){return 10;}
-    else if(cRegisters && cShorts && !registerReadWriteTest_passed && !shortFinder_passed){return 11;}
-    else if(cCurrents && !currentConsumptionTest_passed){return 5;}
-    else if(cRegisters && !registerReadWriteTest_passed){return 6;}
-    else if(cShorts && !shortFinder_passed){return 7;}
-*/    
-    else{return 0;}
+    if(cCurrents && cRegisters && cShorts && !currentConsumptionTest_passed && !registerReadWriteTest_passed && !shortFinder_passed){std::cout << "return statement: 8" << std::endl; return 8;}
+    else if(cCurrents && cRegisters && !currentConsumptionTest_passed && !registerReadWriteTest_passed){std::cout << "return statement: 9" << std::endl;return 9;}
+    else if(cCurrents && cShorts && !currentConsumptionTest_passed && !shortFinder_passed){std::cout << "return statement: 10" << std::endl;return 10;}
+//    else if(cRegisters && cShorts && !registerReadWriteTest_passed && !shortFinder_passed){std::cout << "return statement: 11" << std::endl;return 11;}
+    else if(cCurrents && !currentConsumptionTest_passed){std::cout << "return statement: 5" << std::endl;return 5;}
+//    else if(cRegisters && !registerReadWriteTest_passed){std::cout << "return statement: 6" << std::endl;return 6;}
+//    else if(cShorts && !shortFinder_passed){std::cout << "return statement: 7" << std::endl;return 7;}
+
+    std::cout << "return statement: 0" << std::endl;return 0;
 }

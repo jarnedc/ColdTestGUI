@@ -23,7 +23,6 @@
 #include <RQ_OBJECT.h>
 #include <TFile.h>
 #include <ctime>
-
 const char * dataBasePath = "/root/Ph2_ACF_v1.40/Ph2_ACF/src/GUI/database.txt";
 const char * serialNumberPath = "/root/Ph2_ACF_v1.40/Ph2_ACF/src/GUI/serial_number.txt";
 const char * logPath = "/root/Ph2_ACF_v1.40/Ph2_ACF/src/GUI/log.txt";
@@ -66,15 +65,24 @@ private:
    TGGroupFrame        *fGframe2;
    TGGroupFrame        *fGframe3;
    TGLabel		*TestSummaryLabel;
+
+   TGLabel		*AlreadyTestedPopUpLabel;
+   TGMainFrame		*fPopUp;
+   TGVerticalFrame	*fPopupTopVertical;
+   TGTextButton		*fProceed;
+   TGTextButton 	*fCancelTest;
+   TGHorizontalFrame	*fHorFrameForPopUpButtons;
 public:
    IntegratedTesterGui(const TGWindow *p, UInt_t w, UInt_t h);
    virtual ~IntegratedTesterGui();
+   bool hybridAlreadyTested();
+   void DoAlreadyTestedPopUp();
    void TranslateReturnValue(int);
    void DisactivateTestButton();
    void ActivateTestButton();
    void DoExit(void);
    void DoDraw(int);
-   void integratedtester(void);
+   void integratedtester();
    void WriteInfo(std::string);
    int returnDateAndTime();
    std::string ReadCompleteFile(std::string);
@@ -88,4 +96,8 @@ public:
    //std::string configXML = "settings/Calibration_8CBC.xml";
    ClassDef(IntegratedTesterGui, 0)
    ofstream logbook;
+
+   void ClosePopUp();
+   void integratedtesterAfterRetestSelected();
+   void ClosePopUpAndProceedWithTest();
 };

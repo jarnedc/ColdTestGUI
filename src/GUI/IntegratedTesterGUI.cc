@@ -60,11 +60,12 @@ IntegratedTesterGui::IntegratedTesterGui(const TGWindow *p, UInt_t w, UInt_t h)
 
 
    //define the Redo Calibration text button
-   fRedoCalibration = new TGTextButton(fHL1, "&Redo Calibration", IDs.GetUnID());
+ /*  fRedoCalibration = new TGTextButton(fHL1, "&Redo Calibration", IDs.GetUnID());
    fRedoCalibration->Connect("Clicked()", "IntegratedTesterGui", this, "integratedtester()");
    fHL1->AddFrame(fRedoCalibration, new TGLayoutHints(kLHintsCenterX,2,2,2,2));
    fRedoCalibration->SetToolTipText("Click this button to redo the calibration for the current hybrid.");
    fRedoCalibration->SetState(kButtonDisabled);
+*/
    //define the draw button
   // TGTextButton *draw = new TGTextButton(fHL1,"&Draw");
   // draw->Connect("Clicked()","IntegratedTesterGui",this,"DoDraw()");
@@ -161,7 +162,22 @@ IntegratedTesterGui::~IntegratedTesterGui()
 void IntegratedTesterGui::integratedtester()
 {
    //user clicked the start test button
-   int DateAndTime = returnDateAndTime();  
+   if(hybridAlreadyTested()){
+	DoAlreadyTestedPopUp();
+   }
+   else{integratedtesterAfterRetestSelected();}
+}
+
+void IntegratedTesterGui::ClosePopUpAndProceedWithTest()
+{
+   ClosePopUp();
+   integratedtesterAfterRetestSelected();
+}
+
+void IntegratedTesterGui::integratedtesterAfterRetestSelected()
+{
+   //user clicked the Proceed with the test button
+   int DateAndTime = returnDateAndTime(); 
    DisactivateTestButton();
    state->SetText("TEST RUNNING");
    fGframe->Layout(); 
@@ -189,6 +205,54 @@ void IntegratedTesterGui::integratedtester()
    ActivateTestButton();
 }
 
+
+void IntegratedTesterGui::DoAlreadyTestedPopUp(){
+   //create a new window for pop up
+   fPopUp = new TGMainFrame(gClient->GetRoot(),300,300);
+   fPopupTopVertical = new TGVerticalFrame(fPopUp,300,300);  
+   //add a label to describe what the issue is
+   AlreadyTestedPopUpLabel = new TGLabel(fPopupTopVertical, "This hybrid has already been tested!!");
+   AlreadyTestedPopUpLabel->SetText("This hybrid has already been tested before!\n Do you want to test it again?");
+   AlreadyTestedPopUpLabel->Layout();
+   fPopupTopVertical->AddFrame(AlreadyTestedPopUpLabel, new TGLayoutHints(kLHintsExpandX|kLHintsExpandY, 2, 2, 2, 2));  
+   
+   //add a horizontal frame with two buttons to choose how to proceed
+   TGHorizontalFrame *fHorFrameForPopUpButtons = new TGHorizontalFrame(fPopupTopVertical);
+   
+   fProceed = new TGTextButton(fHorFrameForPopUpButtons, "&Proceed with the test", IDs.GetUnID());
+   fProceed->Connect("Clicked()", "IntegratedTesterGui", this, "ClosePopUpAndProceedWithTest()");
+   fHorFrameForPopUpButtons->AddFrame(fProceed, new TGLayoutHints(kLHintsCenterY, 2,2,2,2));
+   fCalibration->SetToolTipText("Click this button to redo the calibration. An entry will be added for this hybrid in the DB.");
+   
+   fCancelTest = new TGTextButton(fHorFrameForPopUpButtons, "&Cancel Test", IDs.GetUnID());
+   fCancelTest->Connect("Clicked()", "IntegratedTesterGui", this, "ClosePopUp()");
+   fHorFrameForPopUpButtons->AddFrame(fCancelTest, new TGLayoutHints(kLHintsCenterX,2,2,2,2));
+   fCancelTest->SetToolTipText("Click this button to NOT proceed with the test.");
+//add the horizontal layout to the vertical
+   fPopupTopVertical->AddFrame(fHorFrameForPopUpButtons,new TGLayoutHints(kLHintsExpandX|kLHintsExpandY,2,2,2,2));
+//add the vertical layout to the popup window 
+   fPopUp->AddFrame(fPopupTopVertical,new TGLayoutHints(kLHintsExpandX|kLHintsExpandY,
+                                             2,2,2,2)); 
+
+   //Default state
+   fPopUp->SetWindowName("Hybrid already tested");
+   fPopUp->MapSubwindows();
+   fPopUp->Resize(500,500);
+   fPopUp->MapWindow();
+
+}
+
+void IntegratedTesterGui::ClosePopUp(){
+    //FrameToClose->CloseWindow();
+    std::cout << "This should close the PopUp" << std::endl;
+    fPopUp->CloseWindow();
+}
+
+bool IntegratedTesterGui::hybridAlreadyTested(){
+   //should use IntegratedTesterGui::ReadSerialNumberFromFile and the a search database option
+   return true;
+}
+
 void IntegratedTesterGui::TranslateReturnValue(int outcomeOfIntegratedTester){
 	std::cout << "outcomeOfIntegratedTester in GUI: " << outcomeOfIntegratedTester << std::endl; 
 	switch(outcomeOfIntegratedTester){
@@ -208,10 +272,34 @@ void IntegratedTesterGui::TranslateReturnValue(int outcomeOfIntegratedTester){
 		state->SetText("FAILED, hybrid failed short finder test");
         	gSystem->ProcessEvents();
 		break;
-       // case (4<outcomeOfIntegratedTester<12):
-	//	state->SetText("FAILED, test did not run properly");
-	//	gSystem->ProcessEvents();
-	//	break;
+        case 5:
+		state->SetText("FAILED, something is wrong with the set-up");
+                gSystem->ProcessEvents();
+                break;
+	case 6:
+                state->SetText("FAILED, something is wrong with the set-up");
+                gSystem->ProcessEvents();
+                break;
+	case 7:
+                state->SetText("FAILED, something is wrong with the set-up");
+                gSystem->ProcessEvents();
+                break;
+	case 8:
+                state->SetText("FAILED, something is wrong with the set-up");
+                gSystem->ProcessEvents();
+                break;
+	case 9:
+                state->SetText("FAILED, something is wrong with the set-up");
+                gSystem->ProcessEvents();
+                break;
+	case 10:
+                state->SetText("FAILED, something is wrong with the set-up");
+                gSystem->ProcessEvents();
+                break;
+	case 11:
+                state->SetText("FAILED, something is wrong with the set-up");
+                gSystem->ProcessEvents();
+                break;
 	default:
 		state->SetText("FAILED");
         	gSystem->ProcessEvents();		 
@@ -221,8 +309,6 @@ void IntegratedTesterGui::TranslateReturnValue(int outcomeOfIntegratedTester){
 void IntegratedTesterGui::DisactivateTestButton(){
    fCalibration->SetState(kButtonDisabled);
    fButtonGroup->SetState(kFALSE);
-   fRedoCalibration->SetState(kButtonDisabled);
-
 }
 void IntegratedTesterGui::ActivateTestButton(){
    fCalibration->SetEnabled();
