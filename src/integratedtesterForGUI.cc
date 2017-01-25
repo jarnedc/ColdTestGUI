@@ -407,6 +407,7 @@ void perform_AntennaOccupancyMeasurement (Tool* pTool )
 
 int integratedtesterForGUI( int cNumCBCs )
 {
+	std::cout << "***********************STARTING THE INTEGRATEDTESTER******************************" << std::endl;
     //configure the logger
     el::Configurations conf ("settings/logger.conf");
     el::Loggers::reconfigureAllLoggers (conf);
@@ -433,13 +434,13 @@ int integratedtesterForGUI( int cNumCBCs )
     bool cOccupancy =  true;
     bool cAntennaMeasurement  = false;
     bool cAll = false;
-
+    
     uint32_t cMaxNumShorts = 10;
-
-    TApplication cApp ( "Root Application", &argc, argv );
+    std::cout << "settings for test set" << std::endl;
+    //TApplication cApp ( "Root Application", &argc, argv );
 
     if ( batchMode ) gROOT->SetBatch ( true );
-    else TQObject::Connect ( "TCanvas", "Closed()", "TApplication", &cApp, "Terminate()" );
+    //else TQObject::Connect ( "TCanvas", "Closed()", "TApplication", &cApp, "Terminate()" );
 
 
     // set all test flags ON if all flag set in arguments passed to tester.
@@ -453,16 +454,19 @@ int integratedtesterForGUI( int cNumCBCs )
     }
 
     //Start server to communicate with HMP404 instrument via usbtmc and SCPI
-    pid_t childPid;  // the child process that the execution will soon run inside of.
+   /* pid_t childPid;  // the child process that the execution will soon run inside of.
     childPid = fork();
-
+    bool reachedEndOfTest = false;
     if (childPid < 0) // fork failed
     {
         // log the error
         exit (1);
+    	std::cout << "***************IF STATEMENT*************" << std::endl;
     }
     else if (childPid == 0) // fork succeeded
     {
+        std::cout << "***************ELSE IF STATEMENT*************" << std::endl;
+   
         if ( cCurrents )
         {
             // launch HMP4040 server
@@ -471,12 +475,16 @@ int integratedtesterForGUI( int cNumCBCs )
         }
     }
     else  // Main (parent) process after fork succeeds
-    {
-        int returnStatus = -1 ;
-        waitpid (childPid, &returnStatus, 0); // Parent process waits here for child to terminate.
+    {*/
+        std::cout << "***************ELSE STATEMENT*************" << std::endl;
 
-        if (returnStatus == 0)  // Verify child process terminated without error.
-        {
+        int returnStatus = -1 ;
+            
+    // waitpid (childPid, &returnStatus, 0); // Parent process waits here for child to terminate.
+	std::cout << "************returnStatus = " << returnStatus << "*****************" <<std::endl;
+    //    if (returnStatus == 0)  // Verify child process terminated without error.
+     //   {
+	    std::cout << "************returnStatus = " << returnStatus << "*****************" <<std::endl;	
             if ( cCurrents )
             {
 #if __ZMQ__
@@ -524,7 +532,7 @@ int integratedtesterForGUI( int cNumCBCs )
                     cTool.SaveResults();
                     cTool.CloseResultFile();
                     cTool.Destroy();
-                    exit (2);
+                    return 101;
                 }
 
             }
@@ -548,7 +556,7 @@ int integratedtesterForGUI( int cNumCBCs )
                     cTool.SaveResults();
                     cTool.CloseResultFile();
                     cTool.Destroy();
-                    exit (3);
+                    return 102;
                 }
             }
 
@@ -600,7 +608,7 @@ int integratedtesterForGUI( int cNumCBCs )
                     cTool.SaveResults();
                     cTool.CloseResultFile();
                     cTool.Destroy();
-                    exit (4);
+                    return 103;
                 }
             }
 
@@ -657,26 +665,46 @@ int integratedtesterForGUI( int cNumCBCs )
                 cTool.AmmendReport ( line);
                 t.show ( "(Antenna) Occupancy measurement");
             }
-
+            std::cout << "stopping the tGlobal" << std::endl;
             tGlobal.stop();
             tGlobal.show ( "Complete system test" );
             sprintf (line, "# %.3f s required to test DUT.", tGlobal.getElapsedTime() );
             cTool.AmmendReport ( line);
-
+	    	
             // have to destroy the tool at the end of the program
             //cTool.SaveResults(); // if this is here then you end up with 2 copies of all histograms and canvases in the root file ... so I've removed it
             cTool.CloseResultFile();
+            std::cout << "before Destroying ctool" << std::endl;
             cTool.Destroy();
-        }
-        else if (returnStatus == 1)
+ 	    //reachedEndOfTest = true;	
+       // }
+       /* else if (returnStatus == 1)
         {
+            std::cout << "************returnStatus = " << returnStatus << "*****************" <<std::endl;
             LOG (INFO) << "The child process terminated with an error!." ;
             exit (1);
-        }
-    }
+        }*/
+   // }
 
 
-    if ( !batchMode ) cApp.Run();
+//    if ( !batchMode ) cApp.Run();
+   /* while (true) {
+    	std::cout << "inside the while loop to check if processes are finished" << std::endl;
+        int status;
+    	pid_t done = wait(&status);
+    	if (done == -1 && !reachedEndOfTest) {
+        	if (errno == ECHILD){std::cout << "no more child processes!!" << std::endl; exit(0) ;} // no more child processes
+    	}
+    	else if(done == -1 && reachedEndOfTest){std::cout << "Processed truely finished!!" << std::endl; return 0 ;} 
+    	else {
+        	if (!WIFEXITED(status) || WEXITSTATUS(status) != 0) {
+            		std::cerr << "pid " << done << " failed" << std::endl;
+            		exit(1);
+        	}
+    	}
 
-    return 0;
+    }*/
+  
+  std::cout << "**************--REACHED THE END OF THE integratedtester--***********************" << std::endl;
+  return 0;
 }

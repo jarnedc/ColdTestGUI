@@ -17,9 +17,9 @@ AntennaFlag = -D__ANTENNA__
 
 DevFlags        =
 
-LibraryDirs = /opt/cactus/lib ../lib 
-	IncludeDirs     =  /opt/cactus/include ../ 
-	ExternalObjects= $(LibraryPaths) -lcactus_extern_pugixml -lcactus_uhal_log -lcactus_uhal_grammars -lcactus_uhal_uhal -lboost_system -lPh2_Interface -lPh2_Description -lPh2_System -lPh2_Utils -lPh2_Tracker -lPh2_Tools 
+LibraryDirs = /opt/cactus/lib ../lib ./
+	IncludeDirs     =  /opt/cactus/include ../ ./
+	ExternalObjects= $(LibraryPaths) -lcactus_extern_pugixml -lcactus_uhal_log -lcactus_uhal_grammars -lcactus_uhal_uhal -lboost_system -lPh2_Interface -lPh2_Description -lPh2_System -lPh2_Utils -lPh2_Tracker -lPh2_Tools -lX11 
 
 ##################################################
 ## check if the Root has THttp
@@ -55,16 +55,16 @@ endif
 
 #################################################
 # check if ZMQ library is available on this machine
-#################################################
-ifneq ("$(wildcard $(ZMQ_HEADER_PATH))","")
-        ExternalObjects += -lzmq $(ZmqFlag)
-        ZMQINSTALLED = yes
-else
-		ZMQINSTALLED = no
-        ZMQINSTRUCTIONS = ZeroMQ library is required to build the lvSupervisor with the server option - get it with \'sudo yum install zeromq-devel\'
-endif
-
-##################################################
+# #################################################
+# ifneq ("$(wildcard $(ZMQ_HEADER_PATH))","")
+#         ExternalObjects += -lzmq $(ZmqFlag)
+#                 ZMQINSTALLED = yes
+#                 else
+#                 		ZMQINSTALLED = no
+#                 		        ZMQINSTRUCTIONS = ZeroMQ library is required to build the lvSupervisor with the server option - get it with \'sudo yum install zeromq-devel\'
+#                 		        endif
+#
+#                 		        ##################################################
 ## check if the Ph2_USBInstDriver drivers are installed
 ##################################################
 ifneq ("$(wildcard $(USBINSTDIR))","")
@@ -83,9 +83,9 @@ LibraryPaths = $(LibraryDirs:%=-L%)
 RootLibraryPaths = $(RootLibraryDirs:%=-L%)
 
 
-binaries=print integratedtester systemtest datatest hybridtest cmtest calibrate commission fpgaconfig pulseshape configure integratedtester
+binaries= integratedtesterForGUI.o IntegratedTesterGUI print systemtest datatest hybridtest cmtest calibrate commission fpgaconfig pulseshape configure integratedtester
+#binaries= integratedtesterForGUI.o IntegratedTesterGUI 
 binariesNoRoot=systemtest datatest fpgaconfig configure
-
 
 .PHONY: clean $(binaries)
 all: rootflags clean $(binaries) 
@@ -117,7 +117,6 @@ calibrate: calibrate.cc
 	$(CXX)  $(CCFlags) -o $@ $< $(IncludePaths) $(ExternalObjects)
 	cp $@ ../bin
 
-
 datatest: datatest.cc
 	$(CXX)  $(CCFlags) -o $@ $< $(IncludePaths) $(ExternalObjects)
 	cp $@ ../bin
@@ -146,5 +145,17 @@ pulseshape: pulseshape.cc
 	$(CXX)  $(CCFlags) -o $@ $< $(IncludePaths) $(ExternalObjects)
 	cp $@ ../bin
 
+integratedtesterForGUI.o: integratedtesterForGUI.cc integratedtesterForGUI.h
+	    $(CXX) -std=c++0x  $(DevFlags) $(CCFlags) $(UserCCFlags) $(CCDefines) $(IncludePaths) $(LibraryPaths) $(ExternalObjects) $(RootLibraryPaths) $(ExtObjectsRoot) -c -o $@ $<
+	    $(CC) -std=c++0x -shared -o libPh2_IntTest.so integratedtesterForGUI.o -pthread 
+
+IntegratedTesterGUI: IntegratedTesterGUI.cc
+	rootcint -f IntegratedTesterGUIDict.cc -c IntegratedTesterGUI.h LinkDef.h
+	$(CC) -std=c++0x -shared -o libPh2_GUI.so IntegratedTesterGUIDict.cc -pthread  $(DevFlags) $(CCFlags) $(UserCCFlags) $(CCDefines) $(IncludePaths) $(LibraryPaths) $(ExternalObjects) $(RootLibraryPaths) $(ExtObjectsRoot)
+	cp *.so ../lib
+	$(CXX)  $(CCFlags) -o $@ $< -lPh2_IntTest -lPh2_GUI  $(IncludePaths) $(ExternalObjects)
+	cp $@ ../bin
+
 clean:
 	rm -f $(binaries) *.o
+

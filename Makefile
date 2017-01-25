@@ -30,9 +30,9 @@ else
 	USBINSTINSTRUCTIONS = To use the Ph2_USBInstDriver please download it from 'https://gitlab.cern.ch/cms_tk_ph2/Ph2_USBInstDriver.git'.
 endif
 
-.PHONY: print dependencies $(DEPENDENCIES) clean src miniDAQ tools
+.PHONY: print dependencies $(DEPENDENCIES) clean src GUI miniDAQ tools
 
-all: src miniDAQ
+all: src GUI miniDAQ 
 
 dependencies: print $(DEPENDENCIES)
 
@@ -48,6 +48,8 @@ tools: System
 src miniDAQ: tools
 	$(MAKE) -C $@
 
+GUI: 
+	$(MAKE) -C $@
 
 
 print:
