@@ -1,7 +1,7 @@
-Objs            = Exception.o Utilities.o Event.o Data.o argvparser.o  FileHandler.o
+Objs            = Exception.o Utilities.o Event.o Data.o argvparser.o  FileHandler.o dbHandler.o
 CC              = g++
 CXX             = g++
-CCFlags         = -g -O1 -w -Wall -pedantic -fPIC `root-config --cflags --evelibs` -Wcpp -L/usr/lib64/
+CCFlags         = -g -O1 -w -Wall -pedantic -fPIC `root-config --cflags --evelibs` -Wcpp -L/usr/lib64/ -I/usr/include/cppconn -L/usr/lib -lmysqlcppconn
 #DevFlags                   = -D__CBCDAQ_DEV__
 DevFlags			 =
 

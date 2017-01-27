@@ -32,7 +32,7 @@ endif
 
 .PHONY: print dependencies $(DEPENDENCIES) clean src GUI miniDAQ tools
 
-all: src GUI miniDAQ 
+all: src miniDAQ 
 
 dependencies: print $(DEPENDENCIES)
 

@@ -15,7 +15,7 @@ Amc13Flag     = -D__AMC13__
 
 LibraryDirs = /opt/cactus/lib ../lib 
 IncludeDirs     =  /opt/cactus/include ../ 
-ExternalObjects= $(LibraryPaths) -lpthread  -lcactus_extern_pugixml -lcactus_uhal_log -lcactus_uhal_grammars -lcactus_uhal_uhal -lboost_system -lPh2_Interface -lPh2_Description -lPh2_System -lPh2_Utils -lPh2_Tracker -lboost_filesystem -lboost_program_options -L../RootWeb/lib -lRootWeb
+ExternalObjects= $(LibraryPaths) -lpthread  -lcactus_extern_pugixml -lcactus_uhal_log -lcactus_uhal_grammars -lcactus_uhal_uhal -lboost_system -lPh2_Interface -lPh2_Description -lPh2_System -lPh2_Utils -lPh2_Tracker -lboost_filesystem -lboost_program_options -L../RootWeb/lib -lRootWeb -I/usr/include/cppconn -L/usr/lib -lmysqlcppconn
 
 ##################################################
 ## check if the Root has THttp

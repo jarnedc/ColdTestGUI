@@ -405,27 +405,23 @@ void perform_AntennaOccupancyMeasurement (Tool* pTool )
 
 }
 
-int integratedtesterForGUI( int cNumCBCs )
+int integratedtesterForGUI( int cNumCBCs, int DateAndTime )
 {
-	std::cout << "***********************STARTING THE INTEGRATEDTESTER******************************" << std::endl;
     //configure the logger
     el::Configurations conf ("settings/logger.conf");
     el::Loggers::reconfigureAllLoggers (conf);
 
     // now query the parsing results
     std::string cHWFile = "settings/Calibration" + std::to_string (cNumCBCs) + "CBC.xml";
-
-    std::string cDirectory = "Results/IntegratedTester";
+    std::string cDirectory = "Results/IntegratedTesterFromGUI-"+std::to_string(DateAndTime);
 
     bool batchMode = true;
-
     std::string cHostname =  "localhost";
     int httpPortNumber =  8080;
     int zmqPortNumber = 8081;
     std::string cPowerSupplyHWFile = "../Ph2_USBInstDriver/settings/HMP4040.xml";
     std::string cPowerSupplyOutputFile = "LV_log.txt";
     int cInterval = 2;
-    //cHWFile =  "settings/Calibration" + std::to_string(cNumCBCs) + "CBC.xml";
 
     bool cCurrents = false;
     bool cRegisters = true;
@@ -437,10 +433,8 @@ int integratedtesterForGUI( int cNumCBCs )
     
     uint32_t cMaxNumShorts = 10;
     std::cout << "settings for test set" << std::endl;
-    //TApplication cApp ( "Root Application", &argc, argv );
 
     if ( batchMode ) gROOT->SetBatch ( true );
-    //else TQObject::Connect ( "TCanvas", "Closed()", "TApplication", &cApp, "Terminate()" );
 
 
     // set all test flags ON if all flag set in arguments passed to tester.
@@ -705,6 +699,5 @@ int integratedtesterForGUI( int cNumCBCs )
 
     }*/
   
-  std::cout << "**************--REACHED THE END OF THE integratedtester--***********************" << std::endl;
   return 0;
 }

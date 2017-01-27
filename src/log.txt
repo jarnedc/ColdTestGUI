@@ -1615,3 +1615,84 @@ Command send to start 2CBC calibration
 1485353618 Closed the calibration GUI!
 1485354574 Closed the calibration GUI!
 1485354887 Closed the calibration GUI!
+1485420953 Closed the calibration GUI!
+1485422229 Closed the calibration GUI!
+1485430820 Closed the calibration GUI!
+1485433086 Closed the calibration GUI!
+1485433864 Closed the calibration GUI!
+1485434151 Closed the calibration GUI!
+1485434538 Closed the calibration GUI!
+1485435884 Closed the calibration GUI!
+1485436105 Closed the calibration GUI!
+1485436674 Closed the calibration GUI!
+1485436964 Closed the calibration GUI!
+1485437833 Closed the calibration GUI!
+1485438191 Closed the calibration GUI!
+1485438407 Closed the calibration GUI!
+1485441566 Closed the calibration GUI!
+1485441839 Closed the calibration GUI!
+1485442286 Closed the calibration GUI!
+1485442694 Closed the calibration GUI!
+1485444296 Closed the calibration GUI!
+1485446021 Closed the calibration GUI!
+1485446174 Closed the calibration GUI!
+1485505996 Closed the calibration GUI!
+1485507094 Closed the calibration GUI!
+1485507465 Closed the calibration GUI!
+1485507725 Closed the calibration GUI!
+1485509060 Closed the calibration GUI!
+1485509871 Closed the calibration GUI!
+1485511793 Closed the calibration GUI!
+1485513184 Closed the calibration GUI!
+1485513767 Closed the calibration GUI!
+1485514429 Closed the calibration GUI!
+1485514513 Closed the calibration GUI!
+1485515456 Closed the calibration GUI!
+1485516271 Closed the calibration GUI!
+1485519161 Closed the calibration GUI!
+1485520261 Closed the calibration GUI!
+1485521995 Closed the calibration GUI!
+1485522770 Closed the calibration GUI!
+1485524667 Closed the calibration GUI!
+1485525484 Closed the calibration GUI!
+1485525796 Closed the calibration GUI!
+1485526297 Closed the calibration GUI!
+1485527506 Closed the calibration GUI!
+1485527856 Closed the calibration GUI!
+1485527950 Closed the calibration GUI!
+1485528089 Closed the calibration GUI!
+1485528397 Closed the calibration GUI!
+1485528997 -->Start Integrated Tester was Clicked
+1485529036 End of test was reached!
+1485529051 -->Start Integrated Tester was Clicked
+1485529089 End of test was reached!
+1485529097 Closed the calibration GUI!
+1485529503 Closed the calibration GUI!
+1485530061 -->Start Integrated Tester was Clicked
+1485530079 Closed the calibration GUI!
+1485530712 -->Start Integrated Tester was Clicked
+1485530748 -->Start Integrated Tester was Clicked
+1485530787 End of test was reached!
+1485530795 Closed the calibration GUI!
+1485530816 -->Start Integrated Tester was Clicked
+1485530855 End of test was reached!
+1485530869 Closed the calibration GUI!
+1485532205 -->Start Integrated Tester was Clicked
+1485532215 Closed the calibration GUI!
+1485533362 -->Start Integrated Tester was Clicked
+1485533403 -->Start Integrated Tester was Clicked
+1485533442 End of test was reached!
+1485533501 Closed the calibration GUI!
+1485534262 -->Start Integrated Tester was Clicked
+1485534302 End of test was reached!
+1485535386 -->Start Integrated Tester was Clicked
+1485535499 -->Start Integrated Tester was Clicked
+1485535601 -->Start Integrated Tester was Clicked
+1485535659 Closed the calibration GUI!
+1485535706 -->Start Integrated Tester was Clicked
+1485535745 End of test was reached!
+1485535793 Closed the calibration GUI!
+1485536049 -->Start Integrated Tester was Clicked
+1485536103 -->Start Integrated Tester was Clicked
+1485536141 End of test was reached!
+1485537305 Closed the calibration GUI!

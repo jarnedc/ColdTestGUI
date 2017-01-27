@@ -1,134 +1,185 @@
 #include "IntegratedTesterGUI.h"
+void *runThreadFunc(void * f){
+        //void*(* myFunction)(void *) = (void*(*)(void*))f;
+	//myFunction((void*) 1);
+	IntegratedTesterGui* myObject = (IntegratedTesterGui*)f;
+//	 int nrCBCs = 0;
+//   	if(myObject->fRadiob[0]->IsOn()){nrCBCs = 2;}
+//   	else if(myObject->fRadiob[1]->IsOn()){nrCBCs = 8;}
+	myObject->integratedtester();
+  
+	//((int(*)(int))f)(2);
+	return 0;
+}
 
 IntegratedTesterGui::IntegratedTesterGui(const TGWindow *p, UInt_t w, UInt_t h)
 { 
+    db.isConnected();
    // Create a main frame
    fMain = new TGMainFrame(p,w,h);
-   fTopVertical = new TGVerticalFrame(fMain,800,800);
+   TGHorizontalFrame *fTopTopHorizontal = new TGHorizontalFrame(fMain,1600,1000);
+   TGVerticalFrame *fTopVertical = new TGVerticalFrame(fTopTopHorizontal,600,1000);
+   TGVerticalFrame *fTopVerticalRight = new TGVerticalFrame(fTopTopHorizontal,600,1000);
+
+
+   //******************************************************************************
+   //******************************left part of the GUI(for tester control)********
+   //******************************************************************************
    //--=====================================CANVASES===========================--//
    // Create canvas widget
-   TGHorizontalFrame *HorFramePlots = new TGHorizontalFrame(fTopVertical,800,100);
-   TGVerticalFrame *VerFramePlots1 = new TGVerticalFrame(HorFramePlots,400,200);
-   fEcanvas = new TRootEmbeddedCanvas("Ecanvas",VerFramePlots1,400,100);
-   fEcanvas1 = new TRootEmbeddedCanvas("Ecanvas1",VerFramePlots1,400,100);
-   VerFramePlots1->AddFrame(fEcanvas,new TGLayoutHints(kLHintsTop,
-                                             2,2,2,2));
-   VerFramePlots1->AddFrame(fEcanvas1,new TGLayoutHints(kLHintsTop,
-                                             2,2,2,2));
+   TGHorizontalFrame *HorFramePlots = new TGHorizontalFrame(fTopVertical,600,300);
+   TGVerticalFrame *VerFramePlots1 = new TGVerticalFrame(HorFramePlots,300,300);
+   fEcanvas = new TRootEmbeddedCanvas("Ecanvas",VerFramePlots1,300,150);
+   fEcanvas1 = new TRootEmbeddedCanvas("Ecanvas1",VerFramePlots1,300,150);
+   VerFramePlots1->AddFrame(fEcanvas,new TGLayoutHints(kLHintsTop,2,2,2,2));
+   VerFramePlots1->AddFrame(fEcanvas1,new TGLayoutHints(kLHintsTop,2,2,2,2));
 
-   TGVerticalFrame *VerFramePlots2 = new TGVerticalFrame(HorFramePlots,400,100);
-   fEcanvas2 = new TRootEmbeddedCanvas("Ecanvas2",VerFramePlots2,400,100);
-   fEcanvas3 = new TRootEmbeddedCanvas("Ecanvas3",VerFramePlots2,400,100);
-   VerFramePlots2->AddFrame(fEcanvas2,new TGLayoutHints(kLHintsTop,
-                                             2,2,2,2));
-   VerFramePlots2->AddFrame(fEcanvas3,new TGLayoutHints(kLHintsTop,
-                                             2,2,2,2));	
+   TGVerticalFrame *VerFramePlots2 = new TGVerticalFrame(HorFramePlots,300,300);
+   fEcanvas2 = new TRootEmbeddedCanvas("Ecanvas2",VerFramePlots2,300,150);
+   fEcanvas3 = new TRootEmbeddedCanvas("Ecanvas3",VerFramePlots2,300,150);
+   VerFramePlots2->AddFrame(fEcanvas2,new TGLayoutHints(kLHintsTop,2,2,2,2));
+   VerFramePlots2->AddFrame(fEcanvas3,new TGLayoutHints(kLHintsTop,2,2,2,2));	
    
-   HorFramePlots->AddFrame(VerFramePlots1,new TGLayoutHints(kLHintsLeft|
-                     kLHintsExpandY, 2,2,2,2));
-   HorFramePlots->AddFrame(VerFramePlots2,new TGLayoutHints(kLHintsLeft|
-                     kLHintsExpandX,
-                                             2,2,2,2));
+   HorFramePlots->AddFrame(VerFramePlots1,new TGLayoutHints(kLHintsLeft|kLHintsExpandY, 2,2,2,2));
+   HorFramePlots->AddFrame(VerFramePlots2,new TGLayoutHints(kLHintsLeft|kLHintsExpandX, 2,2,2,2));
 
-   fTopVertical->AddFrame(HorFramePlots, new TGLayoutHints(kLHintsExpandX |
-                     kLHintsExpandY, 1,1,1,1));
+   fTopVertical->AddFrame(HorFramePlots, new TGLayoutHints(kLHintsExpandX|kLHintsTop,2,2,2,2));
+                     
   
    //SetCleanup(kDeepCleanup);
-   //Connect("CloseWindow()", "IntegratedTesterGui", this, "DoExit()");
+   Connect("CloseWindow()", "IntegratedTesterGui", this, "DoExit()");
    //DontCallClose();
-   //--====================================RADIO BUTTONS==========================--// 
-   //define the Radio buttons
-   TGHorizontalFrame *fHL2 = new TGHorizontalFrame(fTopVertical);
+   //--====================================USER INPUT============================--//
+   TGHorizontalFrame *fForUserInput = new TGHorizontalFrame(fTopVertical);
+
+   //--RADIO BUTTONS--// 
+   TGHorizontalFrame *fHL2 = new TGHorizontalFrame(fForUserInput);
    fButtonGroup = new TGVButtonGroup(fHL2, "Hybrid selection");
    fRadiob[0] = new TGRadioButton(fButtonGroup, new TGHotString("2CBC (this is the small one)"),IDs.GetUnID());
    fRadiob[0]->SetToolTipText("Select this if you want to run the callibration for the 2CBC hybrid. This is the PCB containing 2 CBC chips.");
    fRadiob[1] = new TGRadioButton(fButtonGroup, new TGHotString("8CBC (this is the big one)"),IDs.GetUnID());
    fRadiob[1]->SetToolTipText("Select this if you want to run the callibration for the 8CBC hybrid. This is the PCB containing 8 CBC chips. This is set as default.");
    fButtonGroup->Show();
-   fHL2->AddFrame(fButtonGroup, new TGLayoutHints(kLHintsExpandX|kLHintsExpandY,2,2,2,2));
-   fTopVertical->AddFrame(fHL2,new TGLayoutHints(kLHintsExpandX|kLHintsTop,2,2,2,2));
+   fHL2->AddFrame(fButtonGroup,new TGLayoutHints(kLHintsNoHints,2,2,2,2));
+   fForUserInput->AddFrame(fHL2, new TGLayoutHints(kLHintsLeft,2,2,2,2));
   
-   //--=============================PUSH BUTTONS===========================--//
-   //define the Start Calibration text button
-   TGVerticalFrame *fForButtons = new TGVerticalFrame(fTopVertical);
-   TGHorizontalFrame *fHL1 = new TGHorizontalFrame(fForButtons);
+   //--PUSH BUTTONS--//
+   TGVerticalFrame *fForButtons = new TGVerticalFrame(fForUserInput);
 
-   fCalibration = new TGTextButton(fHL1, "&Start Calibration", IDs.GetUnID());
-   fCalibration->Connect("Clicked()", "IntegratedTesterGui", this, "integratedtester()");
-   fHL1->AddFrame(fCalibration, new TGLayoutHints(kLHintsCenterX, 2,2,2,2));
+   fCalibration = new TGTextButton(fForButtons, "&Start Integrated Tester", IDs.GetUnID());
+   fCalibration->Connect("Clicked()", "IntegratedTesterGui", this, "launchThread()");
    fCalibration->SetToolTipText("Click this button to start the calibration. Depending on which hybrid you selected in the list above (2CBC or 8CBC) it will automatically run with the correct settings");
-
-
-   //define the Redo Calibration text button
- /*  fRedoCalibration = new TGTextButton(fHL1, "&Redo Calibration", IDs.GetUnID());
-   fRedoCalibration->Connect("Clicked()", "IntegratedTesterGui", this, "integratedtester()");
-   fHL1->AddFrame(fRedoCalibration, new TGLayoutHints(kLHintsCenterX,2,2,2,2));
-   fRedoCalibration->SetToolTipText("Click this button to redo the calibration for the current hybrid.");
-   fRedoCalibration->SetState(kButtonDisabled);
-*/
-   //define the draw button
-  // TGTextButton *draw = new TGTextButton(fHL1,"&Draw");
-  // draw->Connect("Clicked()","IntegratedTesterGui",this,"DoDraw()");
-  // fHL1->AddFrame(draw, new TGLayoutHints(kLHintsCenterX,2,2,2,2));
-
-   //define the Exit text button
+   fForButtons->AddFrame(fCalibration, new TGLayoutHints(kLHintsCenterX, 2,2,2,2));
+ 
+  //define the Exit text button
    fExit = new TGTextButton(fForButtons, "&Exit this application", IDs.GetUnID());
    fExit->Connect("Clicked()", "IntegratedTesterGui", this, "DoExit()");
-   fForButtons->AddFrame(fExit, new TGLayoutHints(kLHintsCenterY));
-   fExit->SetToolTipText("Click this button if you want to exit this GUI");
+   fExit->SetToolTipText("Click this button if you want to exit this GUI"); 
+   fForButtons->AddFrame(fExit, new TGLayoutHints(kLHintsCenterX,2,2,2,2));
    
-   fForButtons->AddFrame(fHL1,new TGLayoutHints(kLHintsExpandX|kLHintsExpandY,2,2,2,2));
-   fForButtons->AddFrame(fExit,new TGLayoutHints(kLHintsExpandX|kLHintsExpandY,5,5,5,5));
-   fTopVertical->AddFrame(fForButtons,new TGLayoutHints(kLHintsExpandX|kLHintsTop,2,2,2,2)); 
+   
+   fForUserInput->AddFrame(fForButtons,new TGLayoutHints(kLHintsLeft,2,2,2,2));
+   fTopVertical->AddFrame(fForUserInput,new TGLayoutHints(kLHintsExpandX|kLHintsTop,1,1,1,1)); 
  
    //--========================LABELS=================================--//
+   TGVerticalFrame *fForLabels = new TGVerticalFrame(fTopVertical,600,800);
    //define the status label
-   fGframe = new TGGroupFrame(fTopVertical,"Status of the test"); 
+   fGframe = new TGGroupFrame(fForLabels,"Status of the test"); 
    state = new TGLabel(fGframe, "I am waiting for your input");
    fGframe->AddFrame(state, new TGLayoutHints(kLHintsExpandX|kLHintsExpandY));
-   fTopVertical->AddFrame(fGframe,new TGLayoutHints(kLHintsExpandX|kLHintsTop,
-                                             2,2,2,2)); 
-
+   fForLabels->AddFrame(fGframe,new TGLayoutHints(kLHintsTop|kLHintsExpandX,2,2,2,2)); 
    //define the serialNumber label
-   fGframe2 = new TGGroupFrame(fTopVertical, "Serial Number");
+   fGframe2 = new TGGroupFrame(fForLabels, "Serial Number");
    SerialNumberLabel = new TGLabel(fGframe2, "The serial number comes here");
-  fGframe2->AddFrame(SerialNumberLabel,new TGLayoutHints(kLHintsExpandX|kLHintsExpandY));
-  fTopVertical->AddFrame(fGframe2,new TGLayoutHints(kLHintsExpandX|kLHintsTop,
-                                             2,2,2,2));
+   fGframe2->AddFrame(SerialNumberLabel,new TGLayoutHints(kLHintsExpandX|kLHintsExpandY));
+   fForLabels->AddFrame(fGframe2,new TGLayoutHints(kLHintsTop|kLHintsExpandX,2,2,2,2));
 
+   fGframe3 = new TGGroupFrame(fForLabels, "Test Summary");
+   TestSummaryLabel = new TGLabel(fGframe3, "\n \n \n The test summary comes here \n \n \n");
+   fGframe3->AddFrame(TestSummaryLabel,new TGLayoutHints(kLHintsExpandX|kLHintsExpandY));
+   fForLabels->AddFrame(fGframe3,new TGLayoutHints(kLHintsTop|kLHintsExpandX,2,2,2,2));
+
+   fGframe4 = new TGGroupFrame(fForLabels, "DB Status");
+   DBStatusLabel = new TGLabel(fGframe4, "The DB status comes here");
+   fGframe4->AddFrame(DBStatusLabel,new TGLayoutHints(kLHintsExpandX|kLHintsExpandY));
+   fForLabels->AddFrame(fGframe4,new TGLayoutHints(kLHintsTop|kLHintsExpandX,2,2,2,2));
+
+/*
    TestSummaryLabel = new TGLabel(fTopVertical, "\n \n \n The test summary comes here \n \n \n");
    TestSummaryLabel->SetTitle("Test Summary");
-   fTopVertical->AddFrame(TestSummaryLabel, new TGLayoutHints(kLHintsExpandX|kLHintsExpandY, 2, 2, 2, 2));
-
-   //define the Summary test label
- /*   fGframe3 = new TGGroupFrame(fTopVertical, "Test summary",800,200);
-     TestSummary = new TGLabel(fGframe3, "Summary from test ");
-   fGframe3->AddFrame(TestSummary,new TGLayoutHints(kLHintsExpandX|kLHintsExpandY));
-  fTopVertical->AddFrame(fGframe3,new TGLayoutHints(kLHintsExpandX|kLHintsTop,
-                                             2,2,2,2));
-*/
+   fTopVertical->AddFrame(TestSummaryLabel, new TGLayoutHints(kLHintsExpandY, 2, 2, 2, 2));
+ */
 
    //--======================TEXT EDIT==============================--//
    //define the textedit for the serial number
-   fTextEntry = new TGTextEntry(fTopVertical, new TGTextBuffer(100));
-   fTopVertical->AddFrame(fTextEntry, new TGLayoutHints(kLHintsExpandX | kLHintsCenterY, 5, 5, 5, 5));
+   fTextEntry = new TGTextEntry(fForLabels, new TGTextBuffer(100));
+   fForLabels->AddFrame(fTextEntry, new TGLayoutHints(kLHintsExpandX|kLHintsTop, 5, 5, 5, 5));
+   fTextEntry->Connect("ReturnPressed()", "IntegratedTesterGui", this, "UpdateSerNumberLabel()");
+     	
+   fTopVertical->AddFrame(fForLabels,new TGLayoutHints(kLHintsBottom,1,1,1,1));
 
-   fMain->AddFrame(fTopVertical,new TGLayoutHints(kLHintsExpandX|kLHintsExpandY, 2,2,2,2));
+
+
+
+   fTopTopHorizontal->AddFrame(fTopVertical,new TGLayoutHints(kLHintsLeft, 2,2,2,2));	
+   //******************************************************************************
+   //******************************right part of the GUI(for environmental control)
+   //******************************************************************************
+  
+   TGGroupFrame *fGframe5 = new TGGroupFrame(fTopVerticalRight, "test label for env monitoring");
+   EnvMonitoringLabel = new TGLabel(fGframe5, "test test");
+   fGframe5->AddFrame(EnvMonitoringLabel,new TGLayoutHints(kLHintsExpandX|kLHintsExpandY));
+   fTopVerticalRight->AddFrame(fGframe5,new TGLayoutHints(kLHintsExpandX|kLHintsExpandY,2,2,2,2));  
+
+   fTopTopHorizontal -> AddFrame(fTopVerticalRight,new TGLayoutHints(kLHintsLeft, 2,2,2,2));
+   
+  envCounter = 0;
+
+   //--================BACK TO THE MAIN========================================-// 	
+   fMain->AddFrame(fTopTopHorizontal,new TGLayoutHints(kLHintsExpandX|kLHintsExpandY));
    //Default state
    fButtonGroup->SetState(kTRUE);
    fMain->SetWindowName("2CBC/8CBC Hybrid calibration");
    fMain->MapSubwindows();
-   fMain->Resize(800,800);
+   fMain->Resize(1600,1000);
    fMain->MapWindow();
    fButtonGroup->SetRadioButtonExclusive(kTRUE);
    fRadiob[1]->SetOn();
+
+
+   testerThread = nullptr;
+   TTimer *timer = new TTimer();
+   timer->Connect("Timeout()", "IntegratedTesterGui", this, "UpdateEnvMonitoring()");
+   timer->Start(1000, kFALSE);
 };
+
+void IntegratedTesterGui::UpdateEnvMonitoring(){
+     if(testerThread != nullptr){
+     	if(testerThread->GetState()==6){ //6 means thread has finished
+      		std::cout << "State:  " << testerThread->GetState() << std::endl;
+     		testerThread->Join();
+		//std::cout << "We can activate button and join" << std::endl;
+		//ActivateTestButton();
+		delete testerThread;
+                testerThread = nullptr;
+ 	}
+     }	
+    else{std::cout<<"not done yet" << std::endl;}	
+    envCounter++;  
+    EnvMonitoringLabel->SetText((std::to_string(envCounter)).c_str());
+}
+
+void IntegratedTesterGui::UpdateSerNumberLabel(){
+        std::string SerialNumberScanned = fTextEntry->GetText(); 
+   	SerialNumberLabel->SetText(SerialNumberScanned.c_str());
+	std::cout << "the text in the text edit has changed" << std::endl;   
+}
 
 void IntegratedTesterGui::DoDraw(int dateAndTime) {
    // Draws function graphics in randomly chosen interval
    char ROOTfile[200];
-   //snprintf(ROOTfile , 200, "Results/IntegratedTesterFromGUI-%d/Summary.root", (int)dateAndTime);
-    snprintf(ROOTfile , 200, "Results/IntegratedTesterFromGUI-1701231603/Summary.root");
+   snprintf(ROOTfile , 200, "Results/IntegratedTesterFromGUI-%d/Summary.root", (int)dateAndTime);
+   // snprintf(ROOTfile , 200, "Results/IntegratedTesterFromGUI-1701231603/Summary.root");
    
     TFile *f = new TFile(ROOTfile);   
     f->ls();
@@ -182,42 +233,61 @@ void IntegratedTesterGui::ClosePopUpAndProceedWithTest()
 }
 */
 //void IntegratedTesterGui::integratedtesterAfterRetestSelected()
+void IntegratedTesterGui::launchThread(){
+  WriteInfo("-->Start Integrated Tester was Clicked");
+  DisactivateTestButton(); 
+  TestSummaryLabel->SetText("Test status should come here after test.");
+  DBStatusLabel->SetText("DB info");
+  state->SetText("TEST RUNNING");
+  gSystem->ProcessEvents();
+ 
+  testerThread = new TThread("testerThread", runThreadFunc, (void *) this );
+  testerThread->Run();
+}
+
+
 void IntegratedTesterGui::integratedtester()
 
 {
    //user clicked the Proceed with the test button
-   DisactivateTestButton();
-   state->SetText("TEST RUNNING");
-
-   int DateAndTime = returnDateAndTime();
+//   timer->Start(1000, kFALSE);
+  int DateAndTime = returnDateAndTime();
+  time_t t = time(0); 
+  std::string SerialNumberScanned = fTextEntry->GetText(); 
+     
    //get the serial number from the text field 
-   std::string SerialNumberScanned = fTextEntry->GetText();
-   SerialNumberLabel->SetText(SerialNumberScanned.c_str());
-   fGframe2->Layout();  
-   gSystem->ProcessEvents();
-   
-   //get the number fo CBCs for the test from the radio buttons
+  int returnValue = 1;
+
    int nrCBCs = 0;
+   SerialNumberLabel->SetText(SerialNumberScanned.c_str());
    if(fRadiob[0]->IsOn()){nrCBCs = 2;}
    else if(fRadiob[1]->IsOn()){nrCBCs = 8;}
-   gSystem->ProcessEvents();
-   int returnValue = 1;
+	
+
+  // returnValue = integratedtesterForGUI(nrCBCs); 
    try{	
-   	returnValue = integratedtesterForGUI(nrCBCs); 
+   	returnValue = integratedtesterForGUI(nrCBCs, DateAndTime); 
  	std::cout << "the returnValue in the try: " << returnValue << std::endl;
   	TranslateReturnValue(returnValue);
-	WriteResultsTestToDB(DateAndTime,SerialNumberScanned,returnValue);
-  
+	db.insertNewTestResult(SerialNumberScanned, std::to_string(returnValue), std::to_string(returnValue==0 ? 1: 0), std::to_string(nrCBCs),std::to_string(t));
+	WriteResultsTestToDB(DateAndTime,SerialNumberScanned,returnValue); 
+ 	DBStatusLabel->SetText("Values Written To DB");
+        DoDraw(DateAndTime);
+        char Summaryfile[200];
+	snprintf(Summaryfile , 200, "Results/IntegratedTesterFromGUI-%d/TestReport.txt", DateAndTime);
+	TestSummaryLabel->SetText(ReadCompleteFile(std::string(Summaryfile)).c_str());
+        TestSummaryLabel->Layout();
+        WriteInfo("End of test was reached!");
  }
    catch(uhal::exception::ControlHubTargetTimeout &e){
 	std::cout << "Timeout from the GLIB. Is the GLIB powered? Try to ping the GLIB..." <<std::endl;
         state->SetText("FAILED, the GLIB did not respond. Try to PING IT!!!");
 	gSystem->ProcessEvents(); 
   }
-/*   catch(Ph2_HwInterface::Exception &e){
+ /*  catch(Ph2_HwInterface::Exception &e){
 	std::cout << "Ph2_HwInterface::Exception thrown. Try to power cycle the GLIB..." <<std::endl;
         state->SetText("FAILED, the GLIB did not respond. Try to PING IT!!!");
-        gSystem->ProcessEvents()
+        gSystem->ProcessEvents();
    }*/
    catch(...){
        std::cout << "SOMETHING SOMETHING ... went wrong" <<std::endl;
@@ -225,20 +295,9 @@ void IntegratedTesterGui::integratedtester()
         gSystem->ProcessEvents();
    }
    std::cout << "the status of the test when returned to gui: " << returnValue << std::endl;
-   //test finished and no exceptions were caught. now set test in GUI according to the return value
-/*   if(outcomeOfIntegratedTester != 1){
-        fGframe->Layout();
-   	DoDraw(DateAndTime);
-   	//DoDraw(DateAndTime);
-	char Summaryfile[200];
-   	//snprintf(Summaryfile , 200, "Results/IntegratedTesterFromGUI-%d/TestReport.txt", DateAndTime);
-   	snprintf(Summaryfile , 200, "Results/IntegratedTesterFromGUI-1701231603/TestReport.txt");
-   	TestSummaryLabel->SetText(ReadCompleteFile(std::string(Summaryfile)).c_str());
-   	TestSummaryLabel->Layout();
-   }*/
    ActivateTestButton();
 }
-
+/*
 void IntegratedTesterGui::DoAlreadyTestedPopUp(){
    //create a new window for pop up
    fPopUp = new TGMainFrame(gClient->GetRoot(),300,300);
@@ -280,7 +339,7 @@ void IntegratedTesterGui::ClosePopUp(){
     std::cout << "This should close the PopUp" << std::endl;
     fPopUp->CloseWindow();
 }
-
+*/
 bool IntegratedTesterGui::hybridAlreadyTested(){
    //should use IntegratedTesterGui::ReadSerialNumberFromFile and the a search database option
    return true;
@@ -318,12 +377,12 @@ void IntegratedTesterGui::TranslateReturnValue(int outcomeOfIntegratedTester){
 void IntegratedTesterGui::DisactivateTestButton(){
    fCalibration->SetState(kButtonDisabled);
    fButtonGroup->SetState(kFALSE);
-   fExit->SetState(kButtonDisabled);
+   //fExit->SetState(kButtonDisabled);
 }
 void IntegratedTesterGui::ActivateTestButton(){
    fCalibration->SetEnabled();
    fButtonGroup->SetState(kTRUE);
-   fExit->SetEnabled();
+ //  fExit->SetEnabled();
 
 }
 
@@ -333,17 +392,6 @@ int IntegratedTesterGui::returnDateAndTime(){
     struct tm * now = localtime( & t );
     char buffer[80];
     strftime(buffer,80,"%g%m%d%H%M",now);
-  /*  std::string timeReadable =  (now->tm_year + 1900).c_str()  
-         + (now->tm_mon + 1).c_str()
-         +  now->tm_mday
-         + now->tm_hour 
-         + now->tm_minutes
-         + now->tm_sec 
-         << endl;
-*/
-  // std::string resultPath = "Results/IntegratedTesterFromGUI-" + string(buffer);
-  // std::cout << "the files will be saved in " + resultPath << std::endl;
-  std::cout << "buffer: " << buffer << "atoi(buffer): " << atoi(buffer) << std::endl; 
   return atoi(buffer);
 }
 
@@ -404,7 +452,7 @@ void IntegratedTesterGui::WriteResultsTestToDB(int DateAndTime, std::string seri
    ofs.open(dataBasePath,std::ofstream::out | std::ofstream::app);
    ofs << DateAndTime << "," << serialNumber << "," << status << std::endl;
 }
-
+/*
 //read the database and checks wether the calibration was succesful
 
 std::string * IntegratedTesterGui::ReadDBLastLine(){
@@ -441,8 +489,8 @@ std::string * IntegratedTesterGui::ReadDBLastLine(){
    }
    return r;   
 } 
-  
-
+*/  
+/*
 int IntegratedTesterGui::runIntegratedTester(int nr_CBCs, int dateAndTime){
    //char command[800];
    //std::cout << "dateAndTime: " << dateAndTime << " nr_CBCs: " << nr_CBCs << std::endl; 
@@ -457,7 +505,7 @@ int IntegratedTesterGui::runIntegratedTester(int nr_CBCs, int dateAndTime){
    //write the serial number that is scanned and temporarly saved in serial_number.txt AND if the test was a succes (1) or failed (0) to the database.txt file
    //WriteResultsTestToDB(status);	
    
-   /*std::string *lastLine;
+   std::string *lastLine;
    lastLine = ReadDBLastLine();  
    std::string serial_number_database = *(lastLine + 0);
    std::string calStatus_database = *(lastLine + 1);
@@ -482,7 +530,7 @@ int IntegratedTesterGui::runIntegratedTester(int nr_CBCs, int dateAndTime){
    else{
       return false;
    }*/   
-}
+//}
  /*
 void IntegratedTesterGui::HandleReturn()
 {

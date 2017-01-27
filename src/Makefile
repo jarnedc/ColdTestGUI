@@ -19,7 +19,7 @@ DevFlags        =
 
 LibraryDirs = /opt/cactus/lib ../lib ./
 	IncludeDirs     =  /opt/cactus/include ../ ./
-	ExternalObjects= $(LibraryPaths) -lcactus_extern_pugixml -lcactus_uhal_log -lcactus_uhal_grammars -lcactus_uhal_uhal -lboost_system -lPh2_Interface -lPh2_Description -lPh2_System -lPh2_Utils -lPh2_Tracker -lPh2_Tools -lX11 
+	ExternalObjects= $(LibraryPaths) -lcactus_extern_pugixml -lcactus_uhal_log -lcactus_uhal_grammars -lcactus_uhal_uhal -lboost_system -lPh2_Interface -lPh2_Description -lPh2_System -lPh2_Utils -lPh2_Tracker -lPh2_Tools -lX11 -lpthread -I/usr/include/cppconn -L/usr/lib -lmysqlcppconn 
 
 ##################################################
 ## check if the Root has THttp
