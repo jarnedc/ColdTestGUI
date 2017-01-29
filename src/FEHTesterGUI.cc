@@ -1,14 +1,8 @@
 #include "FEHTesterGUI.h"
 void *runThreadFunc(void * f){
-        //void*(* myFunction)(void *) = (void*(*)(void*))f;
-	//myFunction((void*) 1);
 	IntegratedTesterGui* myObject = (IntegratedTesterGui*)f;
-//	 int nrCBCs = 0;
-//   	if(myObject->fRadiob[0]->IsOn()){nrCBCs = 2;}
-//   	else if(myObject->fRadiob[1]->IsOn()){nrCBCs = 8;}
 	myObject->integratedtester();
   
-	//((int(*)(int))f)(2);
 	return 0;
 }
 
@@ -115,12 +109,8 @@ IntegratedTesterGui::IntegratedTesterGui(const TGWindow *p, UInt_t w, UInt_t h)
    //define the textedit for the serial number
    fTextEntry = new TGTextEntry(fForLabels, new TGTextBuffer(100));
    fForLabels->AddFrame(fTextEntry, new TGLayoutHints(kLHintsExpandX|kLHintsTop, 5, 5, 5, 5));
-   fTextEntry->Connect("ReturnPressed()", "IntegratedTesterGui", this, "UpdateSerNumberLabel()");
-     	
+   fTextEntry->Connect("ReturnPressed()", "IntegratedTesterGui", this, "UpdateSerNumberLabel()");    	
    fTopVertical->AddFrame(fForLabels,new TGLayoutHints(kLHintsBottom|kLHintsExpandX,1,1,1,1));
-
-
-
 
    fTopTopHorizontal->AddFrame(fTopVertical,new TGLayoutHints(kLHintsLeft|kLHintsExpandX, 2,2,2,2));	
    //******************************************************************************
@@ -134,7 +124,7 @@ IntegratedTesterGui::IntegratedTesterGui(const TGWindow *p, UInt_t w, UInt_t h)
 
    fTopTopHorizontal -> AddFrame(fTopVerticalRight,new TGLayoutHints(kLHintsLeft|kLHintsExpandX|kLHintsExpandY, 2,2,2,2));
    
-  envCounter = 0;
+   envCounter = 0;
 
    //--================BACK TO THE MAIN========================================-// 	
    fMain->AddFrame(fTopTopHorizontal,new TGLayoutHints(kLHintsExpandX|kLHintsExpandY));
@@ -178,10 +168,8 @@ void IntegratedTesterGui::UpdateSerNumberLabel(){
 }
 
 void IntegratedTesterGui::DoDraw(int dateAndTime) {
-   // Draws function graphics in randomly chosen interval
    char ROOTfile[200];
    snprintf(ROOTfile , 200, "Results/IntegratedTesterFromGUI-%d/Summary.root", (int)dateAndTime);
-   // snprintf(ROOTfile , 200, "Results/IntegratedTesterFromGUI-1701231603/Summary.root");
    
     TFile *f = new TFile(ROOTfile);   
     f->ls();
@@ -218,23 +206,6 @@ IntegratedTesterGui::~IntegratedTesterGui()
    // Destructor.
    Cleanup();
 }
-/*
-void IntegratedTesterGui::integratedtester()
-{
-   //user clicked the start test button
-   if(hybridAlreadyTested()){
-	DoAlreadyTestedPopUp();
-   }
-   else{integratedtesterAfterRetestSelected();}
-}
-
-void IntegratedTesterGui::ClosePopUpAndProceedWithTest()
-{
-   ClosePopUp();
-   integratedtesterAfterRetestSelected();
-}
-*/
-//void IntegratedTesterGui::integratedtesterAfterRetestSelected()
 void IntegratedTesterGui::launchThread(){
   WriteInfo("-->Start Integrated Tester was Clicked");
   DisactivateTestButton(); 
@@ -251,22 +222,19 @@ void IntegratedTesterGui::launchThread(){
 void IntegratedTesterGui::integratedtester()
 
 {
-   //user clicked the Proceed with the test button
-//   timer->Start(1000, kFALSE);
   int DateAndTime = returnDateAndTime();
   time_t t = time(0); 
   std::string SerialNumberScanned = fTextEntry->GetText(); 
      
    //get the serial number from the text field 
-  int returnValue = 1;
-
-   int nrCBCs = 0;
    SerialNumberLabel->SetText(SerialNumberScanned.c_str());
-   if(fRadiob[0]->IsOn()){nrCBCs = 2;}
-   else if(fRadiob[1]->IsOn()){nrCBCs = 8;}
-	
 
-  // returnValue = integratedtesterForGUI(nrCBCs); 
+  //get the nr of CBCs from the radio buttons
+  int nrCBCs = 0;  
+  if(fRadiob[0]->IsOn()){nrCBCs = 2;}
+  else if(fRadiob[1]->IsOn()){nrCBCs = 8;}
+  //TODO:add seprate tries and catches	
+  int returnValue = 1;
    try{	
    	returnValue = integratedtesterForGUI(nrCBCs, DateAndTime); 
  	std::cout << "the returnValue in the try: " << returnValue << std::endl;
@@ -299,49 +267,7 @@ void IntegratedTesterGui::integratedtester()
    std::cout << "the status of the test when returned to gui: " << returnValue << std::endl;
    ActivateTestButton();
 }
-/*
-void IntegratedTesterGui::DoAlreadyTestedPopUp(){
-   //create a new window for pop up
-   fPopUp = new TGMainFrame(gClient->GetRoot(),300,300);
-   fPopupTopVertical = new TGVerticalFrame(fPopUp,300,300);  
-   //add a label to describe what the issue is
-   AlreadyTestedPopUpLabel = new TGLabel(fPopupTopVertical, "This hybrid has already been tested!!");
-   AlreadyTestedPopUpLabel->SetText("This hybrid has already been tested before!\n Do you want to test it again?");
-   AlreadyTestedPopUpLabel->Layout();
-   fPopupTopVertical->AddFrame(AlreadyTestedPopUpLabel, new TGLayoutHints(kLHintsExpandX|kLHintsExpandY, 2, 2, 2, 2));  
-   
-   //add a horizontal frame with two buttons to choose how to proceed
-   TGHorizontalFrame *fHorFrameForPopUpButtons = new TGHorizontalFrame(fPopupTopVertical);
-   
-   fProceed = new TGTextButton(fHorFrameForPopUpButtons, "&Proceed with the test", IDs.GetUnID());
-   fProceed->Connect("Clicked()", "IntegratedTesterGui", this, "ClosePopUpAndProceedWithTest()");
-   fHorFrameForPopUpButtons->AddFrame(fProceed, new TGLayoutHints(kLHintsCenterY, 2,2,2,2));
-   fCalibration->SetToolTipText("Click this button to redo the calibration. An entry will be added for this hybrid in the DB.");
-   
-   fCancelTest = new TGTextButton(fHorFrameForPopUpButtons, "&Cancel Test", IDs.GetUnID());
-   fCancelTest->Connect("Clicked()", "IntegratedTesterGui", this, "ClosePopUp()");
-   fHorFrameForPopUpButtons->AddFrame(fCancelTest, new TGLayoutHints(kLHintsCenterX,2,2,2,2));
-   fCancelTest->SetToolTipText("Click this button to NOT proceed with the test.");
-//add the horizontal layout to the vertical
-   fPopupTopVertical->AddFrame(fHorFrameForPopUpButtons,new TGLayoutHints(kLHintsExpandX|kLHintsExpandY,2,2,2,2));
-//add the vertical layout to the popup window 
-   fPopUp->AddFrame(fPopupTopVertical,new TGLayoutHints(kLHintsExpandX|kLHintsExpandY,
-                                             2,2,2,2)); 
 
-   //Default state
-   fPopUp->SetWindowName("Hybrid already tested");
-   fPopUp->MapSubwindows();
-   fPopUp->Resize(500,500);
-   fPopUp->MapWindow();
-
-}
-
-void IntegratedTesterGui::ClosePopUp(){
-    //FrameToClose->CloseWindow();
-    std::cout << "This should close the PopUp" << std::endl;
-    fPopUp->CloseWindow();
-}
-*/
 bool IntegratedTesterGui::hybridAlreadyTested(){
    //should use IntegratedTesterGui::ReadSerialNumberFromFile and the a search database option
    return true;
@@ -433,22 +359,9 @@ void IntegratedTesterGui::WriteInfo(std::string information)
    std::cout << information << std::endl;
 }
 
-std::string IntegratedTesterGui::ReadSerialNumberFromFile()
-{
-   //opening serial_number.txt file
-  std::string serial_number;
-  ifstream infile(serialNumberPath);
-  if(infile.good())
-  {
-	getline(infile,serial_number);
-  }  
-  else std::cout << "Unable to open serial_number.txt file"; 
-  std::cout << "serial_number from file: " << serial_number << '\n';
-  return serial_number;
-}
 void IntegratedTesterGui::WriteResultsTestToDB(int DateAndTime, std::string serialNumber, int status)
 {
-   std::string serial_number = ReadSerialNumberFromFile();
+   std::string serial_number = fTextEntry->GetText();
    std::cout << "serial number that will be written to DB: " << serial_number << std::endl;
    std::ofstream ofs;
    ofs.open(dataBasePath,std::ofstream::out | std::ofstream::app);
@@ -538,6 +451,49 @@ void IntegratedTesterGui::HandleReturn()
 {
    configXML = fConfigXML->GetText();
    std::cout << configXML << std::endl;
+}
+*/
+/*
+void IntegratedTesterGui::DoAlreadyTestedPopUp(){
+   //create a new window for pop up
+   fPopUp = new TGMainFrame(gClient->GetRoot(),300,300);
+   fPopupTopVertical = new TGVerticalFrame(fPopUp,300,300);  
+   //add a label to describe what the issue is
+   AlreadyTestedPopUpLabel = new TGLabel(fPopupTopVertical, "This hybrid has already been tested!!");
+   AlreadyTestedPopUpLabel->SetText("This hybrid has already been tested before!\n Do you want to test it again?");
+   AlreadyTestedPopUpLabel->Layout();
+   fPopupTopVertical->AddFrame(AlreadyTestedPopUpLabel, new TGLayoutHints(kLHintsExpandX|kLHintsExpandY, 2, 2, 2, 2));  
+   
+   //add a horizontal frame with two buttons to choose how to proceed
+   TGHorizontalFrame *fHorFrameForPopUpButtons = new TGHorizontalFrame(fPopupTopVertical);
+   
+   fProceed = new TGTextButton(fHorFrameForPopUpButtons, "&Proceed with the test", IDs.GetUnID());
+   fProceed->Connect("Clicked()", "IntegratedTesterGui", this, "ClosePopUpAndProceedWithTest()");
+   fHorFrameForPopUpButtons->AddFrame(fProceed, new TGLayoutHints(kLHintsCenterY, 2,2,2,2));
+   fCalibration->SetToolTipText("Click this button to redo the calibration. An entry will be added for this hybrid in the DB.");
+   
+   fCancelTest = new TGTextButton(fHorFrameForPopUpButtons, "&Cancel Test", IDs.GetUnID());
+   fCancelTest->Connect("Clicked()", "IntegratedTesterGui", this, "ClosePopUp()");
+   fHorFrameForPopUpButtons->AddFrame(fCancelTest, new TGLayoutHints(kLHintsCenterX,2,2,2,2));
+   fCancelTest->SetToolTipText("Click this button to NOT proceed with the test.");
+//add the horizontal layout to the vertical
+   fPopupTopVertical->AddFrame(fHorFrameForPopUpButtons,new TGLayoutHints(kLHintsExpandX|kLHintsExpandY,2,2,2,2));
+//add the vertical layout to the popup window 
+   fPopUp->AddFrame(fPopupTopVertical,new TGLayoutHints(kLHintsExpandX|kLHintsExpandY,
+                                             2,2,2,2)); 
+
+   //Default state
+   fPopUp->SetWindowName("Hybrid already tested");
+   fPopUp->MapSubwindows();
+   fPopUp->Resize(500,500);
+   fPopUp->MapWindow();
+
+}
+
+void IntegratedTesterGui::ClosePopUp(){
+    //FrameToClose->CloseWindow();
+    std::cout << "This should close the PopUp" << std::endl;
+    fPopUp->CloseWindow();
 }
 */
 ClassImp(IntegratedTesterGui);
