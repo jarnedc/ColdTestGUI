@@ -1,0 +1,6 @@
+[Desktop Entry]
+Type=Application
+Terminal=true
+Name=launchHybridColdTestGUI
+Icon=/root/Ph2_ACF_v1.40/Ph2_ACF/GUI/IntegratedTesterIcon.svg
+Exec=/root/Ph2_ACF_v1.40/Ph2_ACF/src/hybridColdTest.sh
