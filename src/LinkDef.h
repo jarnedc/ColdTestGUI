@@ -5,5 +5,5 @@
 #pragma link off all functions;
 #pragma link C++ nestedclasses;
  
-#pragma link C++ defined_in "IntegratedTesterGUI.h";
+#pragma link C++ defined_in "FEHTesterGUI.h";
 #endif

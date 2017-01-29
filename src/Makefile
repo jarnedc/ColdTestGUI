@@ -83,8 +83,8 @@ LibraryPaths = $(LibraryDirs:%=-L%)
 RootLibraryPaths = $(RootLibraryDirs:%=-L%)
 
 
-binaries= integratedtesterForGUI.o IntegratedTesterGUI print systemtest datatest hybridtest cmtest calibrate commission fpgaconfig pulseshape configure integratedtester
-#binaries= integratedtesterForGUI.o IntegratedTesterGUI 
+#binaries= FEHTester.o FEHTesterGUI print systemtest datatest hybridtest cmtest calibrate commission fpgaconfig pulseshape configure integratedtester
+binaries= FEHTester.o FEHTesterGUI 
 binariesNoRoot=systemtest datatest fpgaconfig configure
 
 .PHONY: clean $(binaries)
@@ -145,13 +145,13 @@ pulseshape: pulseshape.cc
 	$(CXX)  $(CCFlags) -o $@ $< $(IncludePaths) $(ExternalObjects)
 	cp $@ ../bin
 
-integratedtesterForGUI.o: integratedtesterForGUI.cc integratedtesterForGUI.h
+FEHTester.o: FEHTester.cc FEHTester.h
 	    $(CXX) -std=c++0x  $(DevFlags) $(CCFlags) $(UserCCFlags) $(CCDefines) $(IncludePaths) $(LibraryPaths) $(ExternalObjects) $(RootLibraryPaths) $(ExtObjectsRoot) -c -o $@ $<
-	    $(CC) -std=c++0x -shared -o libPh2_IntTest.so integratedtesterForGUI.o -pthread 
+	    $(CC) -std=c++0x -shared -o libPh2_IntTest.so FEHTester.o -pthread 
 
-IntegratedTesterGUI: IntegratedTesterGUI.cc
-	rootcint -f IntegratedTesterGUIDict.cc -c IntegratedTesterGUI.h LinkDef.h
-	$(CC) -std=c++0x -shared -o libPh2_GUI.so IntegratedTesterGUIDict.cc -pthread  $(DevFlags) $(CCFlags) $(UserCCFlags) $(CCDefines) $(IncludePaths) $(LibraryPaths) $(ExternalObjects) $(RootLibraryPaths) $(ExtObjectsRoot)
+FEHTesterGUI: FEHTesterGUI.cc
+	rootcint -f FEHTesterGUIDict.cc -c FEHTesterGUI.h LinkDef.h
+	$(CC) -std=c++0x -shared -o libPh2_GUI.so FEHTesterGUIDict.cc -pthread  $(DevFlags) $(CCFlags) $(UserCCFlags) $(CCDefines) $(IncludePaths) $(LibraryPaths) $(ExternalObjects) $(RootLibraryPaths) $(ExtObjectsRoot)
 	cp *.so ../lib
 	$(CXX)  $(CCFlags) -o $@ $< -lPh2_IntTest -lPh2_GUI  $(IncludePaths) $(ExternalObjects)
 	cp $@ ../bin

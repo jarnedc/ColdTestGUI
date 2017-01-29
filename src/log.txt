@@ -1696,3 +1696,8 @@ Command send to start 2CBC calibration
 1485536103 -->Start Integrated Tester was Clicked
 1485536141 End of test was reached!
 1485537305 Closed the calibration GUI!
+1485687770 Closed the calibration GUI!
+1485688369 -->Start Integrated Tester was Clicked
+1485690481 Closed the calibration GUI!
+1485691004 Closed the calibration GUI!
+1485692230 Closed the calibration GUI!
