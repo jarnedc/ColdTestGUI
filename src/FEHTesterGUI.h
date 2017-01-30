@@ -66,7 +66,7 @@ private:
    TGVerticalFrame 	*fForButtons; 
    TGRadioButton       	*fRadiob[2];    // Radio buttons
    TGTextButton        	*fExit;         // Exit text button
-   TGTextButton        	*fCalibration;  //Calibration text button
+   TGTextButton        	*fStartTest;  //Calibration text button
    TGTextButton        	*fRedoCalibration;      //Text button to redo the calibration for the current hybrid
    TGVButtonGroup      	*fButtonGroup;  // Button group
    IDList              	 IDs;           // Widget IDs generator

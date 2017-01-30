@@ -489,20 +489,25 @@ int integratedtesterForGUI( int cNumCBCs, int DateAndTime )
             Timer tGlobal;
             tGlobal.start();
             Timer t;
-
+	    std::cout << "Timer set" << std::endl;	
             //create a genereic Tool Object, I can then construct all other tools from that using the Inherit() method
             //this tool stays on the stack and lives until main finishes - all other tools will update the HWStructure from cTool
             std::stringstream outp;
             Tool cTool;
-            cTool.InitializeHw ( cHWFile , outp );
+            std::cout << "initialise cTool" << std::endl;
+	    cTool.InitializeHw ( cHWFile , outp );
+	    std::cout << "HWFile initialised" << std::endl;	
             cTool.InitializeSettings ( cHWFile , outp );
+	    std::cout << "Setting initialised" << std::endl;	
             cTool.CreateResultDirectory ( cDirectory );
             cTool.InitResultFile ( "Summary" );
-            cTool.StartHttpServer();
+            std::cout << "before starting HTTP" << std::endl;
+	    cTool.StartHttpServer();
+	    std::cout << "after starting HTTP" << std::endl;	
             cTool.ConfigureHw (outp );
             cTool.CreateReport();
             LOG (INFO) << outp.str();
-
+	    std::cout << "Tool object created" << std::endl;
             char line[120];
 
             // perform current consumption test if --checkCurrents flag set in arguments passed to tester
