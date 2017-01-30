@@ -1,0 +1,63 @@
+# This is a configuration file. 
+# Each entity needs a separate line.
+# Never use white space symbol " " in the cofiguration sections of this file. 
+# Each line must be ended only with enter ("new line symbol").
+# Format of configuration section lines is the following:
+for sensirion sensors:
+ <name><tabulator><decimal_stick_address><enter>
+for thermocouples:
+<id><tabulator><thermocouple_type><enter>
+
+Below the configuration starts:
+
+sensirion_sensors:
+outer	6873
+inner	6875
+end.
+
+thermocouples:
+1	K
+2	K
+3	K
+4	K
+5	-
+6	-
+7	-
+8	-
+end.
+
+control_loop_sensors:
+inner_dp	6875
+outer_dp	6873
+left_peltier_t	2
+right_peltier_t	1
+end.
+
+relays:
+1	flush_mode_valve
+2	slow_mode_valve
+3	idle
+4	busy
+5	left_peltier_red_cable
+6	left_peltier_black_cable
+7	right_peltier_red_cable
+8	right_peltier_black_cable
+end.
+
+digital_inputs:
+1	lid_closed
+2
+3
+4
+5
+6
+7
+8
+end.
+
+control_parameters:
+target_t	-30
+switchoff_t	-31
+safety_margin	1
+timeout	300
+end.

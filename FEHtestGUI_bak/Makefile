@@ -17,9 +17,9 @@ AntennaFlag = -D__ANTENNA__
 
 DevFlags        =
 
-LibraryDirs = /opt/cactus/lib ../lib ./ 
-	IncludeDirs     =  /opt/cactus/include ../ ./ ../lib
-	ExternalObjects= $(LibraryPaths) -l iowkit -lcactus_extern_pugixml -lcactus_uhal_log -lcactus_uhal_grammars -lcactus_uhal_uhal -lboost_system -lPh2_Interface -lPh2_Description -lPh2_System -lPh2_Utils -lPh2_Tracker -lPh2_Tools -lpthread 
+LibraryDirs = /opt/cactus/lib ../lib  
+	IncludeDirs     =  /opt/cactus/include   
+	ExternalObjects= $(LibraryPaths) -l iowkit -lcactus_extern_pugixml -lcactus_uhal_log -lcactus_uhal_grammars -lcactus_uhal_uhal -lboost_system -lPh2_Interface -lPh2_Description -lPh2_System -lPh2_Utils -lPh2_Tracker -lPh2_Tools -lX11 -lpthread -I/usr/include/cppconn -L/usr/lib -lmysqlcppconn 
 
 ##################################################
 ## check if the Root has THttp
@@ -83,11 +83,11 @@ LibraryPaths = $(LibraryDirs:%=-L%)
 RootLibraryPaths = $(RootLibraryDirs:%=-L%)
 
 
-binaries= print systemtest datatest hybridtest cmtest calibrate commission fpgaconfig pulseshape configure integratedtester
-binariesNoRoot=systemtest datatest fpgaconfig configure
+binaries	= FEHTesterGUI  
+Objs            = dbHandler.o FEHTester.o
 
-.PHONY: clean $(binaries)
-all: rootflags clean $(binaries) 
+.PHONY: clean all 
+all: makeGUIdict dbHandler.o FEHTester.o FEHTesterGUIDict.o FEHTesterGUI
 rootflags:
 	$(eval CCFlags += $(CCFlagsRoot))
 	$(eval ExternalObjects += $(ExtObjectsRoot))
@@ -96,7 +96,7 @@ noroot: clean $(binariesNoRoot)
 
 print:
 	@echo '****************************'
-	@echo 'Building executables in src/'
+	@echo 'Building executables in FEHtesterGUI/'
 	@echo 'Root Has Http:' $(ROOTVERSION)
 	@echo 'Amc13 SW installed:' $(AMC13INSTALLED)
 	@echo 'Antenna installed:' $(ANTENNAINSTALLED)
@@ -104,44 +104,21 @@ print:
 	@echo 'ZeroMQ installed:' $(ZMQINSTALLED)
 	@echo '****************************'
 
-integratedtester: integratedtester.cc
-	$(CXX)  $(CCFlags) -o $@ $< $(IncludePaths) $(ExternalObjects)
-	cp $@ ../bin
+makeGUIdict: FEHTesterGUI.h
+	rootcint -f FEHTesterGUIDict.cc -c FEHTesterGUI.h LinkDef.h
 
-systemtest: systemtest.cc
-	$(CXX)  $(CCFlags) -o $@ $< $(IncludePaths) $(ExternalObjects)
-	cp $@ ../bin
+dbHandler.o: dbHandler.cc dbHandler.h 
+	$(CXX) -std=c++11  $(DevFlags) $(CCFlags) $(CCFlagsRoot) $(UserCCFlags) $(CCDefines) $(IncludePaths) $(LibraryPaths) $(ExternalObjects) $(RootLibraryPaths) $(ExtObjectsRoot) -c -o $@ $<
 
-calibrate: calibrate.cc
-	$(CXX)  $(CCFlags) -o $@ $< $(IncludePaths) $(ExternalObjects)
-	cp $@ ../bin
+FEHTester.o: FEHTester.cc FEHTester.h 
+	$(CXX) -std=c++11  $(DevFlags) $(CCFlags) $(CCFlagsRoot) $(UserCCFlags) $(CCDefines) $(IncludePaths) $(LibraryPaths) $(ExternalObjects) $(RootLibraryPaths) $(ExtObjectsRoot) -c -o $@ $<
 
-datatest: datatest.cc
-	$(CXX)  $(CCFlags) -o $@ $< $(IncludePaths) $(ExternalObjects)
-	cp $@ ../bin
+FEHTesterGUIDict.o: FEHTesterGUIDict.cc FEHTesterGUIDict.h 
+	$(CC) -std=c++0x -shared -o libPh2_fehGUI.so FEHTesterGUIDict.cc $(Objs) -pthread  $(DevFlags) $(CCFlags) $(CCFlagsRoot) $(UserCCFlags) $(CCDefines) $(IncludePaths) $(LibraryPaths) $(ExternalObjects) $(RootLibraryPaths) $(ExtObjectsRoot)
+	mv libPh2_fehGUI.so ../lib
 
-configure: configure.cc
-	$(CXX)  $(CCFlags) -o $@ $< $(IncludePaths) $(ExternalObjects)
-	cp $@ ../bin
-
-#hybridtest: hybridtest.cc
-#	$(CXX)  $(CCFlags) -o $@ $< $(IncludePaths) $(ExternalObjects)
-#	cp $@ ../bin
-
-cmtest: cmtest.cc
-	$(CXX)  $(CCFlags) -o $@ $< $(IncludePaths) $(ExternalObjects)
-	cp $@ ../bin
-
-commission: commission.cc
-	$(CXX)  $(CCFlags) -o $@ $< $(IncludePaths) $(ExternalObjects)
-	cp $@ ../bin
-
-fpgaconfig: fpgaconfig.cc
-	$(CXX)  $(CCFlags) -o $@ $< $(IncludePaths) $(ExternalObjects)
-	cp $@ ../bin
-
-pulseshape: pulseshape.cc
-	$(CXX)  $(CCFlags) -o $@ $< $(IncludePaths) $(ExternalObjects)
+FEHTesterGUI: FEHTesterGUI.cc
+	$(CXX)  $(CCFlags) -o $@ $< -lPh2_fehGUI  $(IncludePaths) $(ExternalObjects) $(CCFlagsRoot) -lColdBoxDriver -lColdBoxExternalDrivers /opt/picoscope/lib/libusbtc08.so
 	cp $@ ../bin
 
 clean:
