@@ -19,7 +19,7 @@ DevFlags        =
 
 LibraryDirs = /opt/cactus/lib ../lib  
 	IncludeDirs     =  /opt/cactus/include   
-	ExternalObjects= $(LibraryPaths) -l iowkit -lcactus_extern_pugixml -lcactus_uhal_log -lcactus_uhal_grammars -lcactus_uhal_uhal -lboost_system -lPh2_Interface -lPh2_Description -lPh2_System -lPh2_Utils -lPh2_Tracker -lPh2_Tools -lX11 -lpthread -I/usr/include/cppconn -L/usr/lib -lmysqlcppconn 
+	ExternalObjects= $(LibraryPaths) -l iowkit -lcactus_extern_pugixml -lcactus_uhal_log -lcactus_uhal_grammars -lcactus_uhal_uhal -lboost_system -lPh2_Interface -lPh2_Description -lPh2_System -lPh2_Utils -lPh2_Tracker -lPh2_Tools -lpthread -I/usr/include/cppconn -L/usr/lib -lmysqlcppconn  
 
 ##################################################
 ## check if the Root has THttp
@@ -87,7 +87,8 @@ binaries	= FEHTesterGUI
 Objs            = dbHandler.o FEHTester.o
 
 .PHONY: clean all 
-all: makeGUIdict dbHandler.o FEHTester.o FEHTesterGUIDict.o FEHTesterGUI
+#all: FEHTesterGUIDict.cc dbHandler.o FEHTester.o FEHTesterGUIDict.o FEHTesterGUI
+all: FEHTesterGUIDict.cc dbHandler.o FEHTester.o libPh2_fehGUI.so FEHTesterGUI
 rootflags:
 	$(eval CCFlags += $(CCFlagsRoot))
 	$(eval ExternalObjects += $(ExtObjectsRoot))
@@ -104,8 +105,8 @@ print:
 	@echo 'ZeroMQ installed:' $(ZMQINSTALLED)
 	@echo '****************************'
 
-makeGUIdict: FEHTesterGUI.h
-	rootcint -f FEHTesterGUIDict.cc -c FEHTesterGUI.h LinkDef.h
+FEHTesterGUIDict.cc: FEHTesterGUI.h LinkDef.h
+	rootcint -f $@ -c $^
 
 dbHandler.o: dbHandler.cc dbHandler.h 
 	$(CXX) -std=c++11  $(DevFlags) $(CCFlags) $(CCFlagsRoot) $(UserCCFlags) $(CCDefines) $(IncludePaths) $(LibraryPaths) $(ExternalObjects) $(RootLibraryPaths) $(ExtObjectsRoot) -c -o $@ $<
@@ -113,14 +114,14 @@ dbHandler.o: dbHandler.cc dbHandler.h
 FEHTester.o: FEHTester.cc FEHTester.h 
 	$(CXX) -std=c++11  $(DevFlags) $(CCFlags) $(CCFlagsRoot) $(UserCCFlags) $(CCDefines) $(IncludePaths) $(LibraryPaths) $(ExternalObjects) $(RootLibraryPaths) $(ExtObjectsRoot) -c -o $@ $<
 
-FEHTesterGUIDict.o: FEHTesterGUIDict.cc FEHTesterGUIDict.h 
-	$(CC) -std=c++0x -shared -o libPh2_fehGUI.so FEHTesterGUIDict.cc $(Objs) -pthread  $(DevFlags) $(CCFlags) $(CCFlagsRoot) $(UserCCFlags) $(CCDefines) $(IncludePaths) $(LibraryPaths) $(ExternalObjects) $(RootLibraryPaths) $(ExtObjectsRoot)
-	mv libPh2_fehGUI.so ../lib
+libPh2_fehGUI.so: FEHTesterGUIDict.cc $(Objs) 
+	$(CC) -std=c++0x -shared -o $@ $^ -pthread  $(DevFlags) $(CCFlags) $(CCFlagsRoot) $(UserCCFlags) $(CCDefines) $(IncludePaths) $(LibraryPaths) $(ExternalObjects) $(RootLibraryPaths) $(ExtObjectsRoot)
+	cp $@ ../lib/.
 
 FEHTesterGUI: FEHTesterGUI.cc
 	$(CXX)  $(CCFlags) -o $@ $< -lPh2_fehGUI  $(IncludePaths) $(ExternalObjects) $(CCFlagsRoot) -lColdBoxDriver -lColdBoxExternalDrivers /opt/picoscope/lib/libusbtc08.so
 	cp $@ ../bin
 
 clean:
-	rm -f $(binaries) *.o
+	rm -f $(binaries) *.o *.so
 

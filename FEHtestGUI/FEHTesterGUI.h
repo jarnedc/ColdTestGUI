@@ -28,6 +28,7 @@
 #include <X11/Xlib.h>
 #include <TTimer.h>
 #include "TThread.h"
+#include "TF1.h"
 #ifndef __CINT__
 #include <thread>
 #include <atomic>
@@ -41,8 +42,12 @@ const char * dataBasePath = "FEHtestGUI/database.txt";
 const char * serialNumberPath = "FEHtestGUI/serial_number.txt";
 const char * logPath = "FEHtestGUI/log.txt";
 
+const std::string productionHybridTypes[10] = {"2SFE18L","2SFE18R","2SFE40L","2SFE40R","PSFE16L","PSFE16R","PSFE26L","PSFE26R","PSFE40L","PSFE40R"}; 
+const std::string prototype2CBCHybridTypes[1] = {"2SFETWO"};
+const std::string prototype8CBCHybridTypes[1] = {"PSMOCKU"};
 
 void *runThreadFunc(void *);
+
 class IDList {
 private:
    Int_t nID;   // creates unique widget's IDs
@@ -68,8 +73,9 @@ private:
    TGVerticalFrame 	*fForButtons; 
    TGRadioButton       	*fRadiob[2];    // Radio buttons
    TGTextButton        	*fExit;         // Exit text button
+   TGTextButton 	*fDraw;
    TGTextButton        	*fStartTest;  //Calibration text button
-   TGTextButton        	*fRedoCalibration;      //Text button to redo the calibration for the current hybrid
+   TGTextButton        	*fRetest;      //Text button to redo the calibration for the current hybrid
    TGVButtonGroup      	*fButtonGroup;  // Button group
    IDList              	 IDs;           // Widget IDs generator
    TGLabel             	*state;        // Label showing the state of the test
@@ -108,21 +114,23 @@ public:
    void TranslateReturnValue(int);
    void DisactivateTestButton();
    void ActivateTestButton();
+   void ActivateTestButtonAndState();
    void DoExit(void);
-   void DoDraw(int);
+   void DoDraw();
    void integratedtester();
    void WriteInfo(std::string);
    int returnDateAndTime();
    std::string ReadCompleteFile(std::string);
    void WriteResultsTestToDB(int,std::string,int);
-   void SetGroupEnabled(Bool_t);
    const char * serialNumber_char;
    ofstream logbook;
    void UpdateEnvMonitoring();
    void launchThread();
-   void UpdateSerNumberLabel();	
+   bool serNrAccordingToTemplate();
    int envCounter;
-
+   int nrCBCs;
+   int DateAndTime;
+   std::string SerialNumberScanned;
    //std::string * ReadDBLastLine();
    //void HandleReturn();
    //int runIntegratedTester(int, int);

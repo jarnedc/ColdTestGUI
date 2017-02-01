@@ -180,9 +180,10 @@ void AntennaTester::Measure()
                 
                 if (channel_position == 9) break;
 
-                for ( auto& cShelve : fShelveVector )
-                {
-                    for ( BeBoard* pBoard : cShelve->fBoardVector )
+                //for ( auto& cShelve : fShelveVector )
+                //{
+                    //for ( BeBoard* pBoard : cShelve->fBoardVector )
+                    for ( BeBoard* pBoard : fBoardVector ) //antenna fix
                     {
                         uint32_t cN = 1;
                         uint32_t cNthAcq = 0;
@@ -192,7 +193,8 @@ void AntennaTester::Measure()
                         while ( cN <=  fTotalEvents )
                         {
                             // Run( pBoard, cNthAcq );
-                            fBeBoardInterface->ReadData( pBoard, cNthAcq, false );
+                            //fBeBoardInterface->ReadData( pBoard, cNthAcq, false );
+                            fBeBoardInterface->ReadData( pBoard, false ); //antenna fix
                             const std::vector<Event*>& events = fBeBoardInterface->GetEvents( pBoard );
 
                             // Loop over Events from this Acquisition
@@ -207,7 +209,8 @@ void AntennaTester::Measure()
                             }
                             cNthAcq++;
                         }
-                        fBeBoardInterface->Stop( pBoard, cNthAcq );
+                        //fBeBoardInterface->Stop( pBoard, cNthAcq );
+                        fBeBoardInterface->Stop( pBoard ); //antenna fix
                         
                         /*Here the reconstruction of histograms happens*/
                         for ( uint16_t channel_id = 1; channel_id < fNCbc * 127 + 1; channel_id++ )
@@ -221,7 +224,7 @@ void AntennaTester::Measure()
                         fHistTop->Reset();
                     }
 
-                }
+               // }
 
             }
         }

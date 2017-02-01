@@ -10,7 +10,7 @@ USBINSTINSTALLED = no
 
 ifneq ("$(wildcard $(ANTENNADIR))","")
 	DEPENDENCIES := CMSPh2_AntennaDriver $(DEPENDENCIES)
-	ANTENNAINSTALLED = no
+	ANTENNAINSTALLED = yes
 else
 	ANTENNAINSTRUCTIONS = To use the USB Antenna, please download the Driver from 'https://gitlab.cern.ch/cms_tk_ph2/CMSPh2_AntennaDriver.git' and make sure that libusb-devel is installed!
 endif
@@ -30,9 +30,9 @@ else
 	USBINSTINSTRUCTIONS = To use the Ph2_USBInstDriver please download it from 'https://gitlab.cern.ch/cms_tk_ph2/Ph2_USBInstDriver.git'.
 endif
 
-.PHONY: print dependencies $(DEPENDENCIES) clean src FEHGUI miniDAQ tools
+.PHONY: print dependencies $(DEPENDENCIES) clean src FEHtestGUI miniDAQ tools
 
-all: src miniDAQ FEHGUI 
+all: src miniDAQ FEHtestGUI 
 
 dependencies: print $(DEPENDENCIES)
 

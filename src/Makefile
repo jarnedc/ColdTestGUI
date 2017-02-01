@@ -18,7 +18,7 @@ AntennaFlag = -D__ANTENNA__
 DevFlags        =
 
 LibraryDirs = /opt/cactus/lib ../lib ./ 
-	IncludeDirs     =  /opt/cactus/include ../ ./ ../lib
+	IncludeDirs     =  /opt/cactus/include ../ ./ ../lib 
 	ExternalObjects= $(LibraryPaths) -l iowkit -lcactus_extern_pugixml -lcactus_uhal_log -lcactus_uhal_grammars -lcactus_uhal_uhal -lboost_system -lPh2_Interface -lPh2_Description -lPh2_System -lPh2_Utils -lPh2_Tracker -lPh2_Tools -lpthread 
 
 ##################################################
@@ -86,8 +86,8 @@ RootLibraryPaths = $(RootLibraryDirs:%=-L%)
 binaries= print systemtest datatest hybridtest cmtest calibrate commission fpgaconfig pulseshape configure integratedtester
 binariesNoRoot=systemtest datatest fpgaconfig configure
 
-.PHONY: clean $(binaries)
-all: rootflags clean $(binaries) 
+.PHONY: $(binaries)
+all: rootflags $(binaries) 
 rootflags:
 	$(eval CCFlags += $(CCFlagsRoot))
 	$(eval ExternalObjects += $(ExtObjectsRoot))
@@ -124,9 +124,9 @@ configure: configure.cc
 	$(CXX)  $(CCFlags) -o $@ $< $(IncludePaths) $(ExternalObjects)
 	cp $@ ../bin
 
-#hybridtest: hybridtest.cc
-#	$(CXX)  $(CCFlags) -o $@ $< $(IncludePaths) $(ExternalObjects)
-#	cp $@ ../bin
+hybridtest: hybridtest.cc
+	$(CXX)  $(CCFlags) -o $@ $< $(IncludePaths) $(ExternalObjects)
+	cp $@ ../bin
 
 cmtest: cmtest.cc
 	$(CXX)  $(CCFlags) -o $@ $< $(IncludePaths) $(ExternalObjects)

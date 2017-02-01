@@ -1,7 +1,7 @@
 #!/bin/bash
-cd /root/Ph2_ACF_v1.40/Ph2_ACF/
+cd /home/fehtests/ColdTestGUI 
 source setup.sh
-cd /usr/local/bin
-. thisroot.sh
-cd /root/Ph2_ACF_v1.40/Ph2_ACF/
+#cd /usr/share/root
+#. thisroot.sh
+#cd /home/fehtests/ColdTestGUI/FEHtestGUI
 FEHTesterGUI

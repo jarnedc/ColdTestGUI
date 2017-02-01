@@ -108,7 +108,7 @@ int main ( int argc, char* argv[] )
         //cHybridTester.Initialize( cScan );
         //cHybridTester.Initialize( cScan );
         cHybridTester.AntennaScan();
-        cHybridTester.TestChannels();
+        //cHybridTester.TestChannels(); 
         cHybridTester.SaveTestingResults ( cHybridId );
 #else
         LOG (INFO) << "This feature is only available if the CMSPh2_AntennaDriver package is installed. It requires a recent version of libusb -devel and can be downloaded from: 'https://github.com/gauzinge/CMSPh2_AntennaDriver.git'" ;
