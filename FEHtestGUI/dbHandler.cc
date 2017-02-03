@@ -1,3 +1,12 @@
+//
+// author and support: Jelena Luetic <jelena.luetic@cern.ch>
+// to compile: use prepared Makefile
+// Test conditions:
+// Scientific Linux CERN 6, kernel 2.6.32-642.13.1.el6.x86_64
+//
+
+
+
 #include "dbHandler.h"
 
 
@@ -7,10 +16,9 @@ dbHandler::dbHandler(){
 		driver = get_driver_instance();
 		//con = driver->connect("tcp://127.0.0.1:5504", "tester", "hybr1dTest3r");
 		con = driver->connect("tcp://dbod-tkhybrid.cern.ch:5503", "tester", "hybr1dTest3r");
+		con->setSchema("tkhybrid");
 		if(isConnected()){
 			std::cout << "[dbHandler] Database connected succesfully" << std::endl;
-			// Connect to the MySQL test database 
-			con->setSchema("tkhybrid");
 		}
 	}
 	catch(sql::SQLException &e){
@@ -24,12 +32,12 @@ dbHandler::~dbHandler(){
 	if(res!=nullptr) delete res;
 	if(stmt!=nullptr) delete stmt;
 	if(con!=nullptr) delete con;
-	;
 }
 
 bool dbHandler::reconnect(){
 	// Create a connection 
-	con->reconnect();
+	con = driver->connect("tcp://dbod-tkhybrid.cern.ch:5503", "tester", "hybr1dTest3r");
+	con->setSchema("tkhybrid");
 	if(isConnected()){
 		std::cout << "[dbHandler] Database connected succesfully" << std::endl;
 		// Connect to the MySQL test database 
@@ -40,16 +48,38 @@ bool dbHandler::reconnect(){
 
 bool dbHandler::isConnected(){
 	try{
-		if (con == nullptr || con->isClosed()){
+		if (con == nullptr || con->isClosed() || !con->isValid()){
 			std::cout << "[dbHandler] Database not connected." << std::endl;
+			con=nullptr;
 			return false;
 		}
 		else{
+			try{
+				stmt = con->createStatement();
+				res = stmt->executeQuery("SELECT 1;");
+				if (res->rowsCount()==0){
+					con=nullptr;
+					return false;
+				}
+				else{
+					return true;
+				}
+			}
+			catch(sql::SQLException &e){
+				cout << "# ERR: SQLException in " << __FILE__;
+				cout << "(" << __FUNCTION__ << ") on line "
+					<< __LINE__ << endl;
+				cout << "# ERR: " << e.what();
+				cout << " (MySQL error code: " << e.getErrorCode();
+				cout << ", SQLState: " << e.getSQLState() << " )" << endl;
+				con=nullptr;
+				return false;
+			}
 			return true;
 		}
 	}
 	catch(sql::SQLException &e){
-		std::cout << "[dbHandler] Database not connected." << std::endl;
+		std::cout << "[dbHandler::isConnected] Database not connected." << std::endl;
 		cout << "# ERR: SQLException in " << __FILE__;
 		cout << "(" << __FUNCTION__ << ") on line "
 			<< __LINE__ << endl;
@@ -62,7 +92,7 @@ bool dbHandler::isConnected(){
 void dbHandler::checkInput(std::string *input){
 	input->erase(remove_if(input->begin(), input->end(), [](char c) { return !isalnum(c); } ), input->end());	
 }
-// checking if the hybryd has already been tested
+// checking if the hybrid has already been tested
 bool dbHandler::checkHybrid(string hybridID){
 	checkInput(&hybridID);
 	stmt = con->createStatement();
@@ -74,6 +104,36 @@ bool dbHandler::checkHybrid(string hybridID){
 		}
 		else{
 			std::cout << "[dbHandler::checkHybrid] Hybrid tested. HybridID: " << hybridID << std::endl;
+			return false;
+		}
+	}
+	catch(sql::SQLException &e){
+		std::cout << "[dbHandler::checkHybrid] Problem with the database." << std::endl;
+		cout << "# ERR: SQLException in " << __FILE__;
+		cout << "(" << __FUNCTION__ << ") on line "
+			<< __LINE__ << endl;
+		cout << "# ERR: " << e.what();
+		cout << " (MySQL error code: " << e.getErrorCode();
+		cout << ", SQLState: " << e.getSQLState() << " )" << endl;throw("dbHandler failed");
+	}
+}
+bool dbHandler::checkHybrid(string hybridID, string *status){
+	checkInput(&hybridID);
+	stmt = con->createStatement();
+	try{
+		res = stmt->executeQuery((string)"SELECT * FROM "+table+" WHERE hybrid_serial_number='"+hybridID+" ';");
+		if (res->rowsCount()==0){
+			std::cout << "[dbHandler::checkHybrid] Hybrid not tested. HybridID: "<< hybridID << std::endl;
+			return true;
+		}
+		else{
+			std::cout << "[dbHandler::checkHybrid] Hybrid tested. HybridID: " << hybridID << std::endl;
+			//res = stmt->executeQuery((string)"SELECT exit_code FROM "+table+" WHERE hybrid_serial_number='"+hybridID+" AND is_last=true';");
+
+			res = stmt->executeQuery((string)"SELECT exit_code FROM "+table+" WHERE hybrid_serial_number='"+hybridID+"' AND is_last=true;");
+			while(res->next()){
+				status->assign((string)res->getString(1));
+			}
 			return false;
 		}
 	}
@@ -118,11 +178,11 @@ bool dbHandler::insertNewTestResult(string hybridID, string calibrationStatus, s
 		//std::cout << "INSERT crash, checking status of the last input..." << std::endl;
 		std::cout << "[dbHandler::insertNewTestResult] Checking status of the last input..." << std::endl;
 		if(checkHybrid(hybridID)) {
-			std::cout << "[dbHandler::checkHybrid] Problem with inserting into the DB." << std::endl;
+			std::cout << "[dbHandler::insertNewResult] Problem with inserting into the DB." << std::endl;
 			return false;
 		}
 		else { 
-			std::cout << "[dbHandler::checkHybrid] Insert successfull." << std::endl;
+			std::cout << "[dbHandler::insertNewResult] Insert successfull." << std::endl;
 			return true;
 		}
 	}

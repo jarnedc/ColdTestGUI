@@ -1855,3 +1855,182 @@ Command send to start 2CBC calibration
 1485889860 End of test was reached!
 1485890141 Closed the calibration GUI!
 1485890195 Closed the calibration GUI!
+1485936121 -->Start Integrated Tester was Clicked
+1485936211 End of test was reached!
+1485936319 Closed the calibration GUI!
+1485936726 -->Start Integrated Tester was Clicked
+1485936815 End of test was reached!
+1485937204 Closed the calibration GUI!
+1485937321 -->Start Integrated Tester was Clicked
+1485937411 End of test was reached!
+1485937447 Closed the calibration GUI!
+1485937590 -->Start Integrated Tester was Clicked
+1485937692 End of test was reached!
+1485937741 Closed the calibration GUI!
+1485938352 Closed the calibration GUI!
+1485938536 Closed the calibration GUI!
+1485938767 -->Start Integrated Tester was Clicked
+1485938857 End of test was reached!
+1485938928 -->Start Integrated Tester was Clicked
+1485938930 End of test was reached!
+1485939002 -->Start Integrated Tester was Clicked
+1485939092 End of test was reached!
+1485939103 Closed the calibration GUI!
+1485939554 Closed the calibration GUI!
+1485941621 Closed the calibration GUI!
+1485941658 Closed the calibration GUI!
+1485941729 Closed the calibration GUI!
+1485942206 -->Start Integrated Tester was Clicked
+1485942226 End of test was reached!
+1485942264 -->Start Integrated Tester was Clicked
+1485942282 End of test was reached!
+1485942306 -->Start Integrated Tester was Clicked
+1485942325 End of test was reached!
+1485942346 -->Start Integrated Tester was Clicked
+1485942366 End of test was reached!
+1485942381 Closed the calibration GUI!
+1485942950 Closed the calibration GUI!
+1485943397 Closed the calibration GUI!
+1485943439 Closed the calibration GUI!
+1485944822 -->Start Integrated Tester was Clicked
+1485944843 End of test was reached!
+1485944973 -->Start Integrated Tester was Clicked
+1485944993 End of test was reached!
+1485945033 Closed the calibration GUI!
+1485945718 -->Start Integrated Tester was Clicked
+1485945738 End of test was reached!
+1485945756 Closed the calibration GUI!
+1485945834 -->Start Integrated Tester was Clicked
+1485945854 End of test was reached!
+1485946688 Closed the calibration GUI!
+1485946706 -->Start Integrated Tester was Clicked
+1485946726 End of test was reached!
+1485946751 Closed the calibration GUI!
+1485946862 -->Start Integrated Tester was Clicked
+1485946882 End of test was reached!
+1485946961 Closed the calibration GUI!
+1485946977 Closed the calibration GUI!
+1485947089 Closed the calibration GUI!
+1485947107 -->Start Integrated Tester was Clicked
+1485947127 End of test was reached!
+1485947210 Closed the calibration GUI!
+1485947310 -->Start Integrated Tester was Clicked
+1485947330 End of test was reached!
+1485947787 -->Start Integrated Tester was Clicked
+1485947889 -->Start Integrated Tester was Clicked
+1485947909 End of test was reached!
+1485948092 -->Start Integrated Tester was Clicked
+1485948112 End of test was reached!
+1485948129 Closed the calibration GUI!
+1485948223 -->Start Integrated Tester was Clicked
+1485948248 End of test was reached!
+1485948539 -->Start Integrated Tester was Clicked
+1485948565 End of test was reached!
+1485954522 -->Start Integrated Tester was Clicked
+1485954547 End of test was reached!
+1485954969 -->Start Integrated Tester was Clicked
+1485954994 End of test was reached!
+1485955484 -->Start Integrated Tester was Clicked
+1485955509 End of test was reached!
+1485955808 -->Start Integrated Tester was Clicked
+1485955835 End of test was reached!
+1485955994 -->Start Integrated Tester was Clicked
+1485956020 End of test was reached!
+1485956305 -->Start Integrated Tester was Clicked
+1485956330 End of test was reached!
+1485956492 Closed the calibration GUI!
+1485956507 Closed the calibration GUI!
+1485958032 Closed the calibration GUI!
+1485958185 -->Start Integrated Tester was Clicked
+1485958209 End of test was reached!
+1485958386 -->Start Integrated Tester was Clicked
+1485958411 End of test was reached!
+1485958509 Closed the calibration GUI!
+1485958618 -->Start Integrated Tester was Clicked
+1485958638 End of test was reached!
+1485958651 Closed the calibration GUI!
+1485958778 -->Start Integrated Tester was Clicked
+1485958798 End of test was reached!
+1485959020 Closed the calibration GUI!
+1485959119 -->Start Integrated Tester was Clicked
+1485959138 End of test was reached!
+1485959658 -->Start Integrated Tester was Clicked
+1485959678 End of test was reached!
+1485959908 -->Start Integrated Tester was Clicked
+1485959929 End of test was reached!
+1485960152 -->Start Integrated Tester was Clicked
+1485960172 End of test was reached!
+1485960205 Closed the calibration GUI!
+1485960274 -->Start Integrated Tester was Clicked
+1485960294 End of test was reached!
+1485961432 -->Start Integrated Tester was Clicked
+1485961452 End of test was reached!
+1485961473 -->Start Integrated Tester was Clicked
+1485961493 End of test was reached!
+1485961511 -->Start Integrated Tester was Clicked
+1485961530 End of test was reached!
+1485961533 -->Start Integrated Tester was Clicked
+1485961553 End of test was reached!
+1485961558 -->Start Integrated Tester was Clicked
+1485961578 End of test was reached!
+1485961630 -->Start Integrated Tester was Clicked
+1485961650 End of test was reached!
+1485961662 Closed the calibration GUI!
+1485961761 -->Start Integrated Tester was Clicked
+1485961781 End of test was reached!
+1485961796 -->Start Integrated Tester was Clicked
+1485961816 End of test was reached!
+1485961823 Closed the calibration GUI!
+1485961935 -->Start Integrated Tester was Clicked
+1485961955 End of test was reached!
+1485961978 -->Start Integrated Tester was Clicked
+1485961997 End of test was reached!
+1485962016 Closed the calibration GUI!
+1485962092 -->Start Integrated Tester was Clicked
+1485962112 End of test was reached!
+1485962123 -->Start Integrated Tester was Clicked
+1485962141 End of test was reached!
+1485962158 -->Start Integrated Tester was Clicked
+1485962178 End of test was reached!
+1485962189 -->Start Integrated Tester was Clicked
+1485962208 End of test was reached!
+1485962245 Closed the calibration GUI!
+1485962839 -->Start Integrated Tester was Clicked
+1485962859 End of test was reached!
+1485962865 Closed the calibration GUI!
+1485963121 -->Start Integrated Tester was Clicked
+1485963141 End of test was reached!
+1485963263 Closed the calibration GUI!
+1485963533 -->Start Integrated Tester was Clicked
+1485963554 End of test was reached!
+1485963669 -->Start Integrated Tester was Clicked
+1485963690 End of test was reached!
+1485963809 -->Start Integrated Tester was Clicked
+1485963969 Closed the calibration GUI!
+1485964081 -->Start Integrated Tester was Clicked
+1485964101 End of test was reached!
+1485964116 Closed the calibration GUI!
+1485964157 Closed the calibration GUI!
+1486040037 -->Start Integrated Tester was Clicked
+1486040103 -->Start Integrated Tester was Clicked
+1486040123 End of test was reached!
+1486040152 -->Start Integrated Tester was Clicked
+1486040171 End of test was reached!
+1486040179 -->Start Integrated Tester was Clicked
+1486040199 End of test was reached!
+1486040243 -->Start Integrated Tester was Clicked
+1486040263 End of test was reached!
+1486040488 Closed the calibration GUI!
+1486041286 -->Start Integrated Tester was Clicked
+1486041306 End of test was reached!
+1486042361 Closed the calibration GUI!
+1486045277 Closed the calibration GUI!
+1486048416 Closed the calibration GUI!
+1486051403 -->Start Integrated Tester was Clicked
+1486051404 End of test was reached!
+1486051829 -->Start Integrated Tester was Clicked
+1486051831 End of test was reached!
+1486051978 -->Start Integrated Tester was Clicked
+1486051979 End of test was reached!
+1486052210 -->Start Integrated Tester was Clicked
+1486107267 Closed the calibration GUI!

@@ -1211,7 +1211,7 @@ void HybridTester::AntennaScan()
 
     cAntenna.close();
 
-    TestChannels ( fDecisionThreshold );
+    //TestChannels ( fDecisionThreshold );
 #endif
 }
 

@@ -21,7 +21,6 @@ IntegratedTesterGui::IntegratedTesterGui(const TGWindow *p, UInt_t w, UInt_t h)
  fEcanvas1 = new TRootEmbeddedCanvas("Ecanvas1",VerFramePlots1,300,150);
    VerFramePlots1->AddFrame(fEcanvas,new TGLayoutHints(kLHintsTop|kLHintsExpandX|kLHintsExpandY,2,2,2,2));
    VerFramePlots1->AddFrame(fEcanvas1,new TGLayoutHints(kLHintsTop|kLHintsExpandX|kLHintsExpandY,2,2,2,2));
-
    TGVerticalFrame *VerFramePlots2 = new TGVerticalFrame(HorFramePlots,300,300);
    fEcanvas2 = new TRootEmbeddedCanvas("Ecanvas2",VerFramePlots2,300,150);
    fEcanvas3 = new TRootEmbeddedCanvas("Ecanvas3",VerFramePlots2,300,150);
@@ -30,7 +29,6 @@ IntegratedTesterGui::IntegratedTesterGui(const TGWindow *p, UInt_t w, UInt_t h)
    
    HorFramePlots->AddFrame(VerFramePlots1,new TGLayoutHints(kLHintsLeft||kLHintsExpandX|kLHintsExpandY, 2,2,2,2));
    HorFramePlots->AddFrame(VerFramePlots2,new TGLayoutHints(kLHintsLeft||kLHintsExpandX|kLHintsExpandY, 2,2,2,2));
-
    fTopVertical->AddFrame(HorFramePlots, new TGLayoutHints(kLHintsExpandX|kLHintsTop|kLHintsExpandY,2,2,2,2));
      */
 
@@ -58,7 +56,6 @@ IntegratedTesterGui::IntegratedTesterGui(const TGWindow *p, UInt_t w, UInt_t h)
    //DontCallClose();
    //--====================================USER INPUT============================--//
 /*   TGHorizontalFrame *fForUserInput = new TGHorizontalFrame(fTopVertical,800,300);
-
    //--RADIO BUTTONS--// 
    TGHorizontalFrame *fHL2 = new TGHorizontalFrame(fForUserInput,800,300);
    fButtonGroup = new TGVButtonGroup(fHL2, "Hybrid selection");
@@ -543,9 +540,7 @@ void IntegratedTesterGui::WriteResultsTestToDB(int DateAndTime, std::string seri
 }
 /*
 //read the database and checks wether the calibration was succesful
-
 std::string * IntegratedTesterGui::ReadDBLastLine(){
-
    fstream file(dataBasePath);
    static std::string r[2];
    std::string buffer;
@@ -655,15 +650,12 @@ void IntegratedTesterGui::DoAlreadyTestedPopUp(){
 //add the vertical layout to the popup window 
    fPopUp->AddFrame(fPopupTopVertical,new TGLayoutHints(kLHintsExpandX|kLHintsExpandY,
                                              2,2,2,2)); 
-
    //Default state
    fPopUp->SetWindowName("Hybrid already tested");
    fPopUp->MapSubwindows();
    fPopUp->Resize(500,500);
    fPopUp->MapWindow();
-
 }
-
 void IntegratedTesterGui::ClosePopUp(){
     //FrameToClose->CloseWindow();
     std::cout << "This should close the PopUp" << std::endl;
@@ -679,4 +671,3 @@ int main(int argc, char *argv[])
    theApp.Run();
    return 0;
 }
-

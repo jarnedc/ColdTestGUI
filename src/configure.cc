@@ -94,6 +94,8 @@ int main ( int argc, char* argv[] )
             }
         }
     }
+   
+   
 
     else
     {
@@ -111,6 +113,17 @@ int main ( int argc, char* argv[] )
             cSystemController.accept ( cReader );
         }
     }
+    std::cout << "And now the VCTH register should come: " << std::endl;
+    //CbcRegReader cReader ( cSystemController.fCbcInterface, "VCth" );    
+  /*  for (auto& cBoard : cSystemController.fBoardVector)
+        {
+            for (auto& cFe : cBoard->fModuleVector)
+            {
+                for (auto cCbc : cFe->fCbcVector)
+                  //  cSystemController.fCbcInterface->ReadCbc (cCbc, TestPulsePot);
+            }
+        }
+  */
 
     cSystemController.Destroy();
 }

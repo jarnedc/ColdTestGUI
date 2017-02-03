@@ -1,0 +1,1 @@
+time[s]	relays_supply_voltage[V]	input1	input2	input3	input4	input5	input6	input7	input8	relay1	relay2	relay3	relay4	relay5	relay6	relay7	relay8	cold_junction_T[*C]	TC1_T[*C]	TC2_T[*C]	TC3_T[*C]	TC4_T[*C]	TC5_T[*C]	TC6_T[*C]	TC7_T[*C]	TC8_T[*C]	inner_T[*C]	inner_RH[%]	inner_DP[*C]	outer_T[*C]	outer_RH[%]	outer_DP[*C]

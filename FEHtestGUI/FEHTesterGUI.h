@@ -25,10 +25,10 @@
 #include <ctime>
 #include "TGTextEntry.h"
 #include "FEHTester.h"
-#include <X11/Xlib.h>
 #include <TTimer.h>
 #include "TThread.h"
 #include "TF1.h"
+#include "TColor.h"
 #ifndef __CINT__
 #include <thread>
 #include <atomic>
@@ -38,13 +38,14 @@
 #include "dbHandler.h"
 #include "../ColdBoxDriver/Main_Driver/ColdBox.h"
 #endif 
-const char * dataBasePath = "FEHtestGUI/database.txt";
-const char * serialNumberPath = "FEHtestGUI/serial_number.txt";
-const char * logPath = "FEHtestGUI/log.txt";
+//const char * dataBasePath = "FEHtestGUI/database.txt";
+//const char * serialNumberPath = "FEHtestGUI/serial_number.txt";
+const char * logPath = "FEHtestGUI/GUIlog.txt";
 
+//arrays containing the headers for the hybrids that are allowed in the serial code. For the productionHybridTypes and prototype8CBCHybridTypes a test with 8CBC configuration will be executed. For the prototype2CBCHybridTypes a test with two CBC configuration will be executed.
 const std::string productionHybridTypes[10] = {"2SFE18L","2SFE18R","2SFE40L","2SFE40R","PSFE16L","PSFE16R","PSFE26L","PSFE26R","PSFE40L","PSFE40R"}; 
-const std::string prototype2CBCHybridTypes[1] = {"2SFETWO"};
-const std::string prototype8CBCHybridTypes[1] = {"PSMOCKU"};
+const std::string prototype2CBCHybridTypes[2] = {"2SFETWO","PSMOCKU"};
+const std::string prototype8CBCHybridTypes[0];
 
 void *runThreadFunc(void *);
 
@@ -59,10 +60,34 @@ public:
    Int_t GetUnID(void) { return ++nID; }
 };
 
-class IntegratedTesterGui : public TGMainFrame {
-   RQ_OBJECT("IntegratedTesterGui")
+class FEHTesterGUI : public TGMainFrame {
+   RQ_OBJECT("FEHTesterGUI")
 private:
    TGMainFrame         	*fMain;
+   IDList              	 IDs;           // Widget IDs generator
+
+   /*for the buttons*/
+   TGVerticalFrame 	*fForButtons; 
+   //TGRadioButton     	*fRadiob[2];    // Radio buttons
+   //TGVButtonGroup   	*fButtonGroup;  // Button group
+   TGTextButton        	*fExit;      
+   //TGTextButton 	*fDraw;
+   TGTextButton        	*fStartTest; 
+   TGTextButton        	*fRetest;     
+   
+   /*Labels*/
+   TGLabel             	*state;  
+   TGLabel             	*SerialNumberLabel; 
+   TGLabel		*EnvMonitoringLabel;
+   TGLabel		*TestSummaryLabel; 
+   TGLabel 		*DBStatusLabel;	
+   TGGroupFrame        	*fGframe;
+   TGGroupFrame        	*fGframe2;
+   TGGroupFrame        	*fGframe3;
+   TGGroupFrame        	*fGframe4;
+   TGTextEntry 		*fTextEntry;
+
+   /*for the canvases
    TRootEmbeddedCanvas 	*fEcanvas;
    TRootEmbeddedCanvas 	*fEcanvas1;
    TRootEmbeddedCanvas 	*fEcanvas2;
@@ -70,37 +95,17 @@ private:
    TGHorizontalFrame 	*HorFramePlots;
    TGVerticalFrame 	*VerFramePlots1;
    TGVerticalFrame 	*VerFramePlots2;
-   TGVerticalFrame 	*fForButtons; 
-   TGRadioButton       	*fRadiob[2];    // Radio buttons
-   TGTextButton        	*fExit;         // Exit text button
-   TGTextButton 	*fDraw;
-   TGTextButton        	*fStartTest;  //Calibration text button
-   TGTextButton        	*fRetest;      //Text button to redo the calibration for the current hybrid
-   TGVButtonGroup      	*fButtonGroup;  // Button group
-   IDList              	 IDs;           // Widget IDs generator
-   TGLabel             	*state;        // Label showing the state of the test
-   TGLabel             	*SerialNumberLabel; //Label showing the serial number of the hybrid that was scanned
-   TGLabel             	*serialNumber; //label showing the SerialNumber of the hybrid. This number is read from a file serial_number.txt
-   TGLabel 		*TestSummary;
-   TGLabel		*EnvMonitoringLabel;
-   TGGroupFrame        	*fGframe;
-   TGGroupFrame        	*fGframe2;
-   TGGroupFrame        	*fGframe3;
-   TGGroupFrame        	*fGframe4;
-   TGLabel		*TestSummaryLabel;
-   TGTextEntry 		*fTextEntry;
-   TGLabel 		*DBStatusLabel;	
+   */
 
    TTimer		*timer;
    TThread 		*testerThread;
-   bool			testerDone;
-
+   /* for the popup screen
    TGLabel		*AlreadyTestedPopUpLabel;
    TGMainFrame		*fPopUp;
    TGVerticalFrame	*fPopupTopVertical;
    TGTextButton		*fProceed;
    TGTextButton 	*fCancelTest;
-   TGHorizontalFrame	*fHorFrameForPopUpButtons;
+   TGHorizontalFrame	*fHorFrameForPopUpButtons;*/
 #ifndef __CINT__
    dbHandler db;
    ColdBox cold_box;
@@ -108,37 +113,47 @@ private:
 
 public:
    
-   IntegratedTesterGui(const TGWindow *p, UInt_t w, UInt_t h);
-   virtual ~IntegratedTesterGui();
-   bool hybridAlreadyTested();
+   FEHTesterGUI(const TGWindow *p, UInt_t w, UInt_t h);
+   virtual ~FEHTesterGUI();
    void TranslateReturnValue(int);
    void DisactivateTestButton();
    void ActivateTestButton();
    void ActivateTestButtonAndState();
    void DoExit(void);
-   void DoDraw();
    void integratedtester();
    void WriteInfo(std::string);
-   int returnDateAndTime();
-   std::string ReadCompleteFile(std::string);
-   void WriteResultsTestToDB(int,std::string,int);
-   const char * serialNumber_char;
-   ofstream logbook;
    void UpdateEnvMonitoring();
    void launchThread();
    bool serNrAccordingToTemplate();
+  
+
+
+   /*old
+   void DoDraw();
+   std::string * ReadDBLastLine();
+   void HandleReturn();
+   void ClosePopUp();
+   void integratedtesterAfterRetestSelected();
+   void ClosePopUpAndProceedWithTest();
+   void WriteResultsTestToDB(int,std::string,int);
+   int runIntegratedTester(int, int);
+   std::string configXML = "settings/Calibration_8CBC.xml";
+   */
+   
+   /*Global*/
+   TColor *red = new TColor(1000, 1, 0, 0);
+   TColor *green = new TColor(1001, 0, 0.8, 0.2);
+   TColor *blue = new TColor(1002, 0, 0, 1);
+   int returnDateAndTime();
+   std::string ReadCompleteFile(std::string);
+   const char * serialNumber_char;
+   ofstream logbook;
    int envCounter;
    int nrCBCs;
    int DateAndTime;
+   bool debugFlag = true;
    std::string SerialNumberScanned;
-   //std::string * ReadDBLastLine();
-   //void HandleReturn();
-   //int runIntegratedTester(int, int);
-   //std::string configXML = "settings/Calibration_8CBC.xml";
-   //void ClosePopUp();
-   //void integratedtesterAfterRetestSelected();
-   //void ClosePopUpAndProceedWithTest();
- 
-   ClassDef(IntegratedTesterGui, 0)
+   
+   ClassDef(FEHTesterGUI, 0)
 };
 

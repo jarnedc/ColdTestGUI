@@ -2,6 +2,7 @@
 #include <stdlib.h>
 #include <string>
 #include <locale>
+#include <future>
 #include "mysql_connection.h"
 
 #include <cppconn/driver.h>
@@ -17,6 +18,7 @@ class dbHandler{
 	sql::Connection *con;
 	sql::Statement *stmt;
 	sql::ResultSet *res;
+	sql::ResultSet *res2;
 	string table = "prototype_FEH_test_results";
 	void checkInput(std::string *input);
 	public:
@@ -25,6 +27,7 @@ class dbHandler{
 	bool isConnected();
 	bool reconnect();
 	bool checkHybrid(string hybridID);	
+	bool checkHybrid(string hybridID, string *status);	
 	bool insertNewTestResult(string hybridID, string calibrationStatus, string pass_test, string nCBCs, string timestamp);
 	bool removeOldTestResult(string hybridID);
 	bool modifyOldTestResult(string hybridID, string calibrationStatus, string pass_test, string timestamp);

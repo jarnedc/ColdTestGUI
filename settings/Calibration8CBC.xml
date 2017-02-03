@@ -10,13 +10,13 @@
       <Global_CBC_Register name="MiscTestPulseCtrl&amp;AnalogMux">0x21</Global_CBC_Register>
       <CBC_Files path="./settings/" />
       <CBC Id="0" configfile="Cbc_default_hole.txt" />
-      <CBC Id="1" configfile="Cbc_default_hole.txt" />
-      <CBC Id="2" configfile="Cbc_default_hole.txt" />
-      <CBC Id="3" configfile="Cbc_default_hole.txt" />
-      <CBC Id="4" configfile="Cbc_default_hole.txt" />
-      <CBC Id="5" configfile="Cbc_default_hole.txt" />
-      <CBC Id="6" configfile="Cbc_default_hole.txt" />
-      <CBC Id="7" configfile="Cbc_default_hole.txt" />
+      <!--CBC Id="1" configfile="Cbc_default_hole.txt" /-->
+      <!--CBC Id="2" configfile="Cbc_default_hole.txt" /-->
+      <!--CBC Id="3" configfile="Cbc_default_hole.txt" /-->
+      <!--CBC Id="4" configfile="Cbc_default_hole.txt" /-->
+      <!--CBC Id="5" configfile="Cbc_default_hole.txt" /-->
+      <!--CBC Id="6" configfile="Cbc_default_hole.txt" /-->
+      <!--CBC Id="7" configfile="Cbc_default_hole.txt" /-->
     </Module>
     <!-- Commissioning Mode -->
     <!-- set to 1 to enable commissioning mode -->

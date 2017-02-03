@@ -464,7 +464,7 @@ int main ( int argc, char* argv[] )
     cmd.defineOption ( "all", "Perform ALL tests on DUT : checkCurrents , checkRegisters, calibrate, checkShorts, and measureOccupancy. ", ArgvParser::NoOptionAttribute );
 
     int result = cmd.parse ( argc, argv );
-
+    std::cout << "arguments read" << std::endl;
     if ( result != ArgvParser::NoParserError )
     {
         LOG (INFO) << cmd.parseErrorDescription ( result );
@@ -520,18 +520,21 @@ int main ( int argc, char* argv[] )
     bool currentConsumptionTest_passed = false;
     bool registerReadWriteTest_passed = false;
     bool shortFinder_passed =false;
-    
+    std::cout << "arguments saved" << std::endl;
 
     if (childPid < 0) // fork failed
     {
         // log the error
         exit (1);
+	std::cout << "fork failed" << std::endl;
     }
     else if (childPid == 0) // fork succeeded
     {
-        if ( cCurrents )
+     std::cout << "fork succeeded" << std::endl;
+	   if ( cCurrents )
         {
-            // launch HMP4040 server
+       		std::cout << "launching the server" << std::endl; 
+           // launch HMP4040 server
             launch_HMP4040server ( cHostname , zmqPortNumber, httpPortNumber, cInterval);
             exit (0);
         }
@@ -539,8 +542,9 @@ int main ( int argc, char* argv[] )
     else  // Main (parent) process after fork succeeds
     {
         int returnStatus = -1 ;
+        std::cout << "before the wait" << std::endl;
         waitpid (childPid, &returnStatus, 0); // Parent process waits here for child to terminate.
-
+	std::cout << "after the wait" << std::endl;
         if (returnStatus == 0)  // Verify child process terminated without error.
         {
             if ( cCurrents )
