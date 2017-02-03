@@ -1,13 +1,13 @@
 #include "FEHTesterGUI.h"
 
 
-IntegratedTesterGui::IntegratedTesterGui(const TGWindow *p, UInt_t w, UInt_t h)
+FEHTesterGUI::FEHTesterGUI(const TGWindow *p, UInt_t w, UInt_t h)
 { 
    // Create a main frame
    fMain = new TGMainFrame(p,w,h);
-   TGHorizontalFrame *fTopTopHorizontal = new TGHorizontalFrame(fMain,1600,1000);
-   TGVerticalFrame *fTopVertical = new TGVerticalFrame(fTopTopHorizontal,1000,1000);
-   TGVerticalFrame *fTopVerticalRight = new TGVerticalFrame(fTopTopHorizontal,1000,1000);
+   TGHorizontalFrame *fTopTopHorizontal = new TGHorizontalFrame(fMain,600,600);
+   TGVerticalFrame *fTopVertical = new TGVerticalFrame(fTopTopHorizontal);
+   TGVerticalFrame *fTopVerticalRight = new TGVerticalFrame(fTopTopHorizontal);
 
 
    //******************************************************************************
@@ -32,28 +32,6 @@ IntegratedTesterGui::IntegratedTesterGui(const TGWindow *p, UInt_t w, UInt_t h)
    fTopVertical->AddFrame(HorFramePlots, new TGLayoutHints(kLHintsExpandX|kLHintsTop|kLHintsExpandY,2,2,2,2));
      */
 
- TGHorizontalFrame *HorFramePlots = new TGHorizontalFrame(fTopVertical,800,300);
-   TGVerticalFrame *VerFramePlots1 = new TGVerticalFrame(HorFramePlots,300,300);
-   fEcanvas = new TRootEmbeddedCanvas("Ecanvas",VerFramePlots1,300,150);
-   fEcanvas1 = new TRootEmbeddedCanvas("Ecanvas1",VerFramePlots1,300,150);
-   VerFramePlots1->AddFrame(fEcanvas,new TGLayoutHints(kLHintsTop,2,2,2,2));
-   VerFramePlots1->AddFrame(fEcanvas1,new TGLayoutHints(kLHintsTop,2,2,2,2));
-
-   TGVerticalFrame *VerFramePlots2 = new TGVerticalFrame(HorFramePlots,300,300);
-   fEcanvas2 = new TRootEmbeddedCanvas("Ecanvas2",VerFramePlots2,300,150);
-   fEcanvas3 = new TRootEmbeddedCanvas("Ecanvas3",VerFramePlots2,300,150);
-   VerFramePlots2->AddFrame(fEcanvas2,new TGLayoutHints(kLHintsTop,2,2,2,2));
-   VerFramePlots2->AddFrame(fEcanvas3,new TGLayoutHints(kLHintsTop,2,2,2,2));	
-   
-   HorFramePlots->AddFrame(VerFramePlots1,new TGLayoutHints(kLHintsLeft|kLHintsExpandY, 2,2,2,2));
-   HorFramePlots->AddFrame(VerFramePlots2,new TGLayoutHints(kLHintsLeft|kLHintsExpandX, 2,2,2,2));
-
-   fTopVertical->AddFrame(HorFramePlots, new TGLayoutHints(kLHintsExpandX|kLHintsTop,2,2,2,2));
-                
-  
-   //SetCleanup(kDeepCleanup);
-   Connect("CloseWindow()", "IntegratedTesterGui", this, "DoExit()");
-   //DontCallClose();
    //--====================================USER INPUT============================--//
 /*   TGHorizontalFrame *fForUserInput = new TGHorizontalFrame(fTopVertical,800,300);
    //--RADIO BUTTONS--// 
@@ -70,73 +48,69 @@ IntegratedTesterGui::IntegratedTesterGui(const TGWindow *p, UInt_t w, UInt_t h)
   */
    //--PUSH BUTTONS--//
    TGVerticalFrame *fForButtons = new TGVerticalFrame(fTopVertical);
-
+   
+   //define the start test button
    fStartTest = new TGTextButton(fForButtons, "&Start testing", IDs.GetUnID());
-   fStartTest->Connect("Clicked()", "IntegratedTesterGui", this, "launchThread()");
+   fStartTest->Connect("Clicked()", "FEHTesterGUI", this, "launchThread()");
    fStartTest->SetToolTipText("Click this button to start the calibration. Depending on which hybrid you selected in the list above (2CBC or 8CBC) it will automatically run with the correct settings");
    fForButtons->AddFrame(fStartTest, new TGLayoutHints(kLHintsCenterX|kLHintsExpandX, 2,2,2,2));
 
     //define the Retest text button
    fRetest = new TGTextButton(fForButtons, "&Retest the same hybrid", IDs.GetUnID());
-   fRetest->Connect("Clicked()", "IntegratedTesterGui", this, "ActivateTestButtonAndState()");
+   fRetest->Connect("Clicked()", "FEHTesterGUI", this, "launchThread()");
    fRetest->SetToolTipText("Click this button if you want to test a hybrid without scanning it again"); 
    fForButtons->AddFrame(fRetest, new TGLayoutHints(kLHintsCenterX|kLHintsExpandX,2,2,2,2));
    
   //define the Exit text button
-   fDraw = new TGTextButton(fForButtons, "&Draw", IDs.GetUnID());
-   fDraw->Connect("Clicked()", "IntegratedTesterGui", this, "DoDraw()");
+/*   fDraw = new TGTextButton(fForButtons, "&Draw", IDs.GetUnID());
+   fDraw->Connect("Clicked()", "FEHTesterGUI", this, "DoDraw()");
    fDraw->SetToolTipText("Click this button if you want to exit this GUI"); 
    fForButtons->AddFrame(fDraw, new TGLayoutHints(kLHintsCenterX|kLHintsExpandX,2,2,2,2));
- 
+ */
 
  
   //define the Exit text button
    fExit = new TGTextButton(fForButtons, "&Exit this application", IDs.GetUnID());
-   fExit->Connect("Clicked()", "IntegratedTesterGui", this, "DoExit()");
+   fExit->Connect("Clicked()", "FEHTesterGUI", this, "DoExit()");
    fExit->SetToolTipText("Click this button if you want to exit this GUI"); 
    fForButtons->AddFrame(fExit, new TGLayoutHints(kLHintsCenterX|kLHintsExpandX,2,2,2,2));
    
-   
- //  fForUserInput->AddFrame(fForButtons,new TGLayoutHints(kLHintsLeft|kLHintsExpandX,2,2,2,2));
-//   fForUserInput->AddFrame(fForButtons,new TGLayoutHints(kLHintsLeft|kLHintsExpandY,2,2,2,2));
  
-   fTopVertical->AddFrame(fForButtons,new TGLayoutHints(kLHintsExpandX|kLHintsTop,1,1,1,1)); 
+   fTopVertical->AddFrame(fForButtons,new TGLayoutHints(kLHintsExpandX|kLHintsBottom,1,1,1,1)); 
  
    //--========================LABELS=================================--//
    TGVerticalFrame *fForLabels = new TGVerticalFrame(fTopVertical);
    //define the status label
    fGframe = new TGGroupFrame(fForLabels,"Status of the test"); 
    state = new TGLabel(fGframe, "\n I am waiting for you to scan a hybrid code \n");
+   state->SetTextColor(blue,kFALSE);
+   gSystem->ProcessEvents();
    fGframe->AddFrame(state, new TGLayoutHints(kLHintsCenterX|kLHintsExpandY|kLHintsExpandX));
    fForLabels->AddFrame(fGframe,new TGLayoutHints(kLHintsTop|kLHintsExpandX|kLHintsExpandY,2,2,2,2)); 
-  //fGframe->SetMaxWidth(100); 
    //define the serialNumber label
    fGframe2 = new TGGroupFrame(fForLabels, "Serial Number");
    SerialNumberLabel = new TGLabel(fGframe2, "The serial number comes here");
    fGframe2->AddFrame(SerialNumberLabel,new TGLayoutHints(kLHintsExpandY));
    fForLabels->AddFrame(fGframe2,new TGLayoutHints(kLHintsTop|kLHintsExpandX,2,2,2,2));
-
+   //define the test label
    fGframe3 = new TGGroupFrame(fForLabels, "Test Summary");
    TestSummaryLabel = new TGLabel(fGframe3, "\n \n \n \n \n \n The test summary comes here \n \n \n \n \n \n \n");
    fGframe3->AddFrame(TestSummaryLabel,new TGLayoutHints(kLHintsExpandY|kLHintsExpandX|kLHintsCenterX));
    fForLabels->AddFrame(fGframe3,new TGLayoutHints(kLHintsTop|kLHintsExpandX|kLHintsExpandY,2,2,2,2));
-
+   //define the DBStatus label
    fGframe4 = new TGGroupFrame(fForLabels, "DB Status");
    DBStatusLabel = new TGLabel(fGframe4, db.isConnected()?"CONNECTED":"NOT CONNECTED");
+   DBStatusLabel->SetTextColor(blue,kFALSE);
+   gSystem->ProcessEvents();
    fGframe4->AddFrame(DBStatusLabel,new TGLayoutHints(kLHintsExpandY|kLHintsExpandX|kLHintsCenterX));
    fForLabels->AddFrame(fGframe4,new TGLayoutHints(kLHintsTop|kLHintsExpandX,2,2,2,2));
 
-/*
-   TestSummaryLabel = new TGLabel(fTopVertical, "\n \n \n The test summary comes here \n \n \n");
-   TestSummaryLabel->SetTitle("Test Summary");
    fTopVertical->AddFrame(TestSummaryLabel, new TGLayoutHints(kLHintsExpandY, 2, 2, 2, 2));
- */
 
-   //--======================TEXT EDIT==============================--//
    //define the textedit for the serial number
    fTextEntry = new TGTextEntry(fForLabels, new TGTextBuffer(100));
    fForLabels->AddFrame(fTextEntry, new TGLayoutHints(kLHintsExpandX|kLHintsTop, 5, 5, 5, 5));
-   fTextEntry->Connect("ReturnPressed()", "IntegratedTesterGui", this, "ActivateTestButtonAndState()");    	
+   fTextEntry->Connect("ReturnPressed()", "FEHTesterGUI", this, "ActivateTestButtonAndState()");    	
    fTopVertical->AddFrame(fForLabels,new TGLayoutHints(kLHintsBottom|kLHintsExpandX,1,1,1,1));
 
    fTopTopHorizontal->AddFrame(fTopVertical,new TGLayoutHints(kLHintsLeft|kLHintsExpandX|kLHintsExpandY, 2,2,2,2));	
@@ -155,40 +129,45 @@ IntegratedTesterGui::IntegratedTesterGui(const TGWindow *p, UInt_t w, UInt_t h)
 
    fTopTopHorizontal -> AddFrame(fTopVerticalRight,new TGLayoutHints(kLHintsLeft|kLHintsExpandX|kLHintsExpandY, 2,2,2,2));
    
+  //******************************************************************************
+   //*****************************Back to the main********************************
+   //******************************************************************************
+ 
+   Connect("CloseWindow()", "FEHTesterGUI", this, "DoExit()");
+  
+   fMain->AddFrame(fTopTopHorizontal,new TGLayoutHints(kLHintsExpandX|kLHintsExpandY));
+   //Default state
+   DisactivateTestButton();
+   fMain->SetWindowName("FE hybrid test");
+   fMain->MapSubwindows();
+   fMain->Resize(GetDefaultSize());
+   fMain->MapWindow();
+  // fButtonGroup->SetState(kTRUE); 
+ // fButtonGroup->SetRadioButtonExclusive(kFALSE);
+   //fRadiob[1]->SetOn();
+
    envCounter = 0;
    nrCBCs=0; 
    SerialNumberScanned = "error";
    DateAndTime = 0;
-   //--================BACK TO THE MAIN========================================-// 	
-   fMain->AddFrame(fTopTopHorizontal,new TGLayoutHints(kLHintsExpandX|kLHintsExpandY));
-   //Default state
-  // fButtonGroup->SetState(kTRUE);
-   DisactivateTestButton();
-   fMain->SetWindowName("2CBC/8CBC Hybrid calibration");
-   fMain->MapSubwindows();
-//   fMain->Resize(1600,1000);
-   fMain->Resize(GetDefaultSize());
-   fMain->MapWindow();
-  // fButtonGroup->SetRadioButtonExclusive(kFALSE);
-   //fRadiob[1]->SetOn();
-
+ 
 
    testerThread = nullptr;
    TTimer *timer = new TTimer();
-   timer->Connect("Timeout()", "IntegratedTesterGui", this, "UpdateEnvMonitoring()");
+   timer->Connect("Timeout()", "FEHTesterGUI", this, "UpdateEnvMonitoring()");
    timer->Start(1000, kFALSE);
 };
 
-void IntegratedTesterGui::UpdateEnvMonitoring(){
+void FEHTesterGUI::UpdateEnvMonitoring(){
   if(testerThread != nullptr)
   {
-    if(testerThread->GetState()==TThread::EState::kFinishedState) 
+    if(testerThread->GetState()==6) 
     { 
    		std::cout << "State:  " << testerThread->GetState() << std::endl;
    		testerThread->Join();
 		  //std::cout << "We can activate button and join" << std::endl;
 		  //ActivateTestButton();
-		  delete testerThread;
+		testerThread->Kill();
       		testerThread = nullptr;
  	  }
   }	
@@ -199,29 +178,144 @@ void IntegratedTesterGui::UpdateEnvMonitoring(){
   EnvMonitoringLabel->SetText(envCounter);
   
 
-  if(envCounter%2==0)
-  	DBStatusLabel->SetText(db.isConnected()?"\t\t\tCONNECTED":"\t\t\tNOT CONNECTED");
-  else 
-  	DBStatusLabel->SetText(db.isConnected()?"CONNECTED\t\t\t":"NOT CONNECTED\t\t\t");
+  if(envCounter%2==0){
+  	DBStatusLabel->SetText(db.isConnected()?"CONNECTED":"NOT CONNECTED");
+        DBStatusLabel->SetTextColor(blue,kFALSE);
+  }
+  else {
+  	DBStatusLabel->SetText(db.isConnected()?"CONNECTED":"NOT CONNECTED");
+	DBStatusLabel->SetTextColor(green,kFALSE);
+  }
 }
 
-void IntegratedTesterGui::ActivateTestButtonAndState(){
+void FEHTesterGUI::ActivateTestButtonAndState(){
    SerialNumberScanned = fTextEntry->GetText();
-   if(serNrAccordingToTemplate()){
+   std::string hybridExitCode;
+   bool hybridNotTested = db.checkHybrid(SerialNumberScanned, &hybridExitCode); 
+   bool SerNrAccordingToTemplate = serNrAccordingToTemplate();
+   if(SerNrAccordingToTemplate && hybridNotTested){
    	fStartTest->SetEnabled();
-   	state->SetText(("You scanned a "+ SerialNumberScanned + " object.\n Click the *Start testing* \n button to start the test " ).c_str());
-   	state->SetTextColor(2);
-	gSystem->ProcessEvents();
+   	fRetest->SetState(kButtonDisabled);
+        state->SetText(("You scanned a NEW "+ SerialNumberScanned + " object.\n Click the *Start testing* \n button to start the test " ).c_str()); 
+  	state->SetTextColor(green, kFALSE);
+	WriteInfo("Scanning of NEW hybrid object " + SerialNumberScanned);
    }
-   else{
+   else if(!SerNrAccordingToTemplate){
 	DisactivateTestButton(); 
 	state->SetText(("You scanned serial number =  "+ SerialNumberScanned + ". \n This is not a valid code." ).c_str()); 	 
-   	state->SetTextColor(4);
-	gSystem->ProcessEvents();
+   	state->SetTextColor(red, kFALSE);
+   	WriteInfo("Scanning of not valid hybrid code "+ SerialNumberScanned);
    }
+   else if(!hybridNotTested){
+	DisactivateTestButton();
+        fRetest->SetEnabled(); 
+        state->SetText(("You scanned serial number =  "+ SerialNumberScanned + ". \n This hybrid has already been tested (return value = " + hybridExitCode+ " ).\n You can press *retest* to test again." ).c_str());
+        state->SetTextColor(blue, kFALSE);
+        WriteInfo("Scanning of already tested hybrid: "+SerialNumberScanned);
+   }
+  gSystem->ProcessEvents();
 }
 
-bool IntegratedTesterGui::serNrAccordingToTemplate(){
+
+void FEHTesterGUI::launchThread(){
+
+  SerialNumberLabel->SetText(SerialNumberScanned.c_str());
+
+  WriteInfo("Staring the test!!");
+  DisactivateTestButton(); 
+  TestSummaryLabel->SetText("Test status should come here after test.");
+  state->SetText("TEST STARTING");
+  gSystem->ProcessEvents();
+  testerThread = new TThread("testerThread", runThreadFunc, (void *) this );
+  testerThread->Run();
+}
+
+void *runThreadFunc(void * f){
+	FEHTesterGUI* myObject = (FEHTesterGUI*)f;
+	myObject->integratedtester(); 
+	return 0;
+}
+
+void FEHTesterGUI::integratedtester()
+
+{
+  DateAndTime = returnDateAndTime();
+  time_t t = time(0); 
+   std::string hybridType = std::string(SerialNumberScanned.begin(), SerialNumberScanned.begin() + 7);
+  state->SetText(("TEST RUNNING FOR: " + std::to_string(nrCBCs) + "CBC hybrid.").c_str());
+  gSystem->ProcessEvents(); 
+  int returnValue = 1;
+  std::cout << "I will run the test for " << nrCBCs << " CBCs" << std::endl;
+  WriteInfo("Running the test");
+    try{//try running the integratedtester	
+	    returnValue = integratedtesterForGUI(nrCBCs, DateAndTime); 
+	    WriteInfo("Test performed with return value: " + returnValue);  
+            TranslateReturnValue(returnValue);
+    }
+     catch(uhal::exception::ControlHubTargetTimeout &e){
+	    std::cout << "Timeout from the GLIB. Is the GLIB powered? Try to ping the GLIB..." <<std::endl;
+	    state->SetText("FAILED, the GLIB did not respond. Try to PING IT!!! Is it powered/connected?");
+	    gSystem->ProcessEvents(); 
+    }  
+    // 	should include the correct header 	
+  /*  catch(Ph2_HwInterface::Exception &e){
+	    std::cout << "Ph2_HwInterface::Exception thrown. Try to power cycle the GLIB..." <<std::endl;
+	    state->SetText("FAILED, the GLIB did not respond. Try to PING IT!!! Is it powered/connected?");
+	    gSystem->ProcessEvents();
+    }*/
+    catch(...){
+	std::cout << "Something went wrong during the running of the test!" << std::endl; //catch all others errors that can occur durint the running of the integratedtester    
+	WriteInfo("Something went wrong during the running of the test!");
+	}
+    try{//try writing to the DB
+	    db.insertNewTestResult(SerialNumberScanned, std::to_string(returnValue), std::to_string(returnValue==0 ? 1: 0), hybridType,std::to_string(t));
+	   // WriteResultsTestToDB(DateAndTime,SerialNumberScanned,returnValue);
+	    WriteInfo("Results written to database");
+    }
+    catch(...){
+	    std::cout << "Something went wrong during writing to DB!" << std::endl;
+	    WriteInfo("Something went wrong during writing to DB!");	
+    }
+
+/*    try{//try drawing the histo's on the GUI
+	    std::cout << "YOU SHOULD START DRAWING NOW!!!" <<std::endl;	
+	    DoDraw();
+    }
+    catch(...){
+	    std::cout << "Something went wrong during plotting of the plots on the GUI!" << std::endl;
+    }
+*/
+    try{//try showing TestReport.txt in the GUI
+	    char Summaryfile[200];
+	    snprintf(Summaryfile , 200, "Results/IntegratedTesterFromGUI-%d/TestReport.txt", DateAndTime);
+	    TestSummaryLabel->SetText(ReadCompleteFile(std::string(Summaryfile)).c_str());
+	    TestSummaryLabel->Layout();
+    }
+    catch(...){
+	    std::cout << "Something went wrong showing the TestReport.txt in the GUI" << std::endl;	 
+   }
+    WriteInfo("End of test was reached!");
+
+  // std::this_thread::sleep_for (std::chrono::seconds(5));
+
+   std::cout << "the status of the test when returned to GUI: " << returnValue << std::endl;
+   WriteInfo("testing and writing finished");
+   fRetest->SetEnabled();
+  // ActivateTestButton();
+}
+
+
+FEHTesterGUI::~FEHTesterGUI()
+{
+   // Destructor.
+   Cleanup();
+}
+
+//***********************************************************************************
+//*****************************HELPER FUNCTIONS**************************************
+//***********************************************************************************
+//
+bool FEHTesterGUI::serNrAccordingToTemplate(){
     std::vector<std::string> vSerNumber;
     vSerNumber.push_back(std::string(SerialNumberScanned.begin(), SerialNumberScanned.begin() + 7));
     vSerNumber.push_back(std::string(SerialNumberScanned.begin()+7, SerialNumberScanned.begin() + 10));
@@ -274,144 +368,33 @@ bool IntegratedTesterGui::serNrAccordingToTemplate(){
 }
 
 
-
-IntegratedTesterGui::~IntegratedTesterGui()
-{
-   // Destructor.
-   Cleanup();
-}
-void IntegratedTesterGui::launchThread(){
-
-  SerialNumberLabel->SetText(SerialNumberScanned.c_str());
-
-  WriteInfo("-->Start Integrated Tester was Clicked");
-  DisactivateTestButton(); 
-  TestSummaryLabel->SetText("Test status should come here after test.");
-  DBStatusLabel->SetText("DB info");
-  state->SetText("TEST STARTING");
-  gSystem->ProcessEvents();
-  testerThread = new TThread("testerThread", runThreadFunc, (void *) this );
-  testerThread->Run();
-}
-
-void *runThreadFunc(void * f){
-	IntegratedTesterGui* myObject = (IntegratedTesterGui*)f;
-	myObject->integratedtester();
-  
-	return 0;
-}
-
-void IntegratedTesterGui::integratedtester()
-
-{
-  DateAndTime = returnDateAndTime();
-  time_t t = time(0); 
-   //get the serial number from the text field 
-   SerialNumberLabel->SetText(SerialNumberScanned.c_str());
-   //analyze the serial number to see which test needs to be performed
-   std::string hybridType = std::string(SerialNumberScanned.begin(), SerialNumberScanned.begin() + 7);
-  /* int nrCBCs = 0;
-   if(hybridType == "2SFE18L"){
-	nrCBCs = 8;
-   }
-   else if(hybridType == "2SFETWO"){
-        nrCBCs = 2;
-   }
-   else std::cout << "the hybrid type from the serial number is not correct" << std::endl;*/
-  state->SetText(("TEST RUNNING FOR: " + std::to_string(nrCBCs) + "CBC hybrid.").c_str());
-  gSystem->ProcessEvents(); 
- 
-  //get the nr of CBCs from the radio buttons
- /* int nrCBCs = 0;  
-  if(fRadiob[0]->IsOn()){nrCBCs = 2;}
-  else if(fRadiob[1]->IsOn()){nrCBCs = 8;}
- */
-  int returnValue = 1;
-  std::cout << "I will run the test for " << nrCBCs << " CBCs" << std::endl;
-//  db.insertNewTestResult(SerialNumberScanned, std::to_string(returnValue), std::to_string(returnValue==0 ? 1: 0), hybridType,std::to_string(t));
-
-    try{//try running the integratedtester	
-	    std::cout << "before running the integratedtester routine" << std::endl;  
-	    returnValue = integratedtesterForGUI(nrCBCs, DateAndTime); 
-	    std::cout << "the returnValue in the try: " << returnValue << std::endl;
-	   // TranslateReturnValue(returnValue);
-    }
-     catch(uhal::exception::ControlHubTargetTimeout &e){
-	    std::cout << "Timeout from the GLIB. Is the GLIB powered? Try to ping the GLIB..." <<std::endl;
-	    state->SetText("FAILED, the GLIB did not respond. Try to PING IT!!! Is it powered/connected?");
-	    gSystem->ProcessEvents(); 
-    }  
-    // 	should include the correct header 	
-  /*  catch(Ph2_HwInterface::Exception &e){
-	    std::cout << "Ph2_HwInterface::Exception thrown. Try to power cycle the GLIB..." <<std::endl;
-	    state->SetText("FAILED, the GLIB did not respond. Try to PING IT!!! Is it powered/connected?");
-	    gSystem->ProcessEvents();
-    }*/
-    catch(...){std::cout << "Something went wrong during the running of the test!" << std::endl;} //catch all others errors that can occur durint the running of the integratedtester    
-
-    try{//try writing to the DB
-	    db.insertNewTestResult(SerialNumberScanned, std::to_string(returnValue), std::to_string(returnValue==0 ? 1: 0), hybridType,std::to_string(t));
-	   // WriteResultsTestToDB(DateAndTime,SerialNumberScanned,returnValue); 
-	    DBStatusLabel->SetText("Values Written To DB");
-    }
-    catch(...){
-	    std::cout << "Something went wrong during writing to DB!" << std::endl;
-    }
-
-    try{//try drawing the histo's on the GUI
-	    std::cout << "YOU SHOULD START DRAWING NOW!!!" <<std::endl;	
-	    DoDraw();
-    }
-    catch(...){
-	    std::cout << "Something went wrong during plotting of the plots on the GUI!" << std::endl;
-    }
-
-    try{//try showing TestReport.txt in the GUI
-	    char Summaryfile[200];
-	    snprintf(Summaryfile , 200, "Results/IntegratedTesterFromGUI-%d/TestReport.txt", DateAndTime);
-	    TestSummaryLabel->SetText(ReadCompleteFile(std::string(Summaryfile)).c_str());
-	    TestSummaryLabel->Layout();
-    }
-    catch(...){
-	    std::cout << "Something went wrong showing the TestReport.txt in the GUI" << std::endl;
-    }
-    WriteInfo("End of test was reached!");
-
-  // std::this_thread::sleep_for (std::chrono::seconds(5));
-
-   std::cout << "the status of the test when returned to GUI: " << returnValue << std::endl;
-   nrCBCs = 0;
-   SerialNumberScanned = "error";
-   fRetest->SetEnabled();
-  // ActivateTestButton();
-}
-bool IntegratedTesterGui::hybridAlreadyTested(){
-   //should use IntegratedTesterGui::ReadSerialNumberFromFile and the a search database option
-   return true;
-}
-
-void IntegratedTesterGui::TranslateReturnValue(int outcomeOfIntegratedTester){
+void FEHTesterGUI::TranslateReturnValue(int outcomeOfIntegratedTester){
 	std::cout << "outcomeOfIntegratedTester in GUI: " << outcomeOfIntegratedTester << std::endl; 
 	switch(outcomeOfIntegratedTester){
 	case 0:
 		state->SetText("TEST SUCCESFULL");
+		state->SetTextColor(green,kFALSE);
         	gSystem->ProcessEvents();
 		break;
  	case 1:
 		state->SetText(("FAILED, return code: " + std::to_string(outcomeOfIntegratedTester)).c_str());
+		state->SetTextColor(red, kFALSE);
 		gSystem->ProcessEvents();
 		break;
 	case 101:
 		state->SetText(("FAILED, hybrid failed current consumption test (return code: " + std::to_string(outcomeOfIntegratedTester) + ")").c_str());
-	        gSystem->ProcessEvents();
+	        state->SetTextColor(red, kFALSE);
+		gSystem->ProcessEvents();
 		break;
 	case 102:
 		state->SetText(("FAILED, hybrid failed register test (return code: " + std::to_string(outcomeOfIntegratedTester) + ")").c_str());
-	        gSystem->ProcessEvents();
+	        state->SetTextColor(red, kFALSE);
+		gSystem->ProcessEvents();
 		break;
 	case 103:
 		state->SetText(("FAILED, hybrid failed short finding test (return code: " + std::to_string(outcomeOfIntegratedTester) + ")").c_str());
-        	gSystem->ProcessEvents();
+        	state->SetTextColor(red, kFALSE);
+		gSystem->ProcessEvents();
 		break;
 	default:
 		state->SetText("FAILED");
@@ -419,33 +402,80 @@ void IntegratedTesterGui::TranslateReturnValue(int outcomeOfIntegratedTester){
 	}
 }
 
-void IntegratedTesterGui::DisactivateTestButton(){
+void FEHTesterGUI::DisactivateTestButton(){
    fStartTest->SetState(kButtonDisabled);
    fRetest->SetState(kButtonDisabled);
   // fButtonGroup->SetState(kFALSE);
-   //fExit->SetState(kButtonDisabled);
 }
-/*void IntegratedTesterGui::DoDraw() {
-   // Draws function graphics in randomly chosen interval
-	std::cout << "In the DoDraw for the sin(x)/x now" << std::endl;    
-   TF1 *f1 = new TF1("f1","sin(x)/x",0,gRandom->Rndm()*10);
-          f1->SetLineWidth(3);
-             f1->Draw();
-                TCanvas *fCanvas = fEcanvas->GetCanvas();
-                   fCanvas->cd();
-                      fCanvas->Update();
-                     }
-*/
-void IntegratedTesterGui::ActivateTestButton(){
+
+void FEHTesterGUI::ActivateTestButton(){
    fStartTest->SetEnabled();
-  fButtonGroup->SetState(kTRUE);
+ // fButtonGroup->SetState(kTRUE);
    fExit->SetEnabled();
 
 }
 
+int FEHTesterGUI::returnDateAndTime(){
+   
+    time_t t = time(0);   // get time now
+    struct tm * now = localtime( & t );
+    char buffer[80];
+    strftime(buffer,80,"%g%m%d%H%M",now);
+  return atoi(buffer);
+}
+
+void FEHTesterGUI::DoExit()
+{
+   WriteInfo("Closed the calibration GUI!");
+   logbook.close();
+   // Exit this application via the Exit button or Window Manager.
+   // Use one of the both lines according to your needs.
+   // Please note to re-run this macro in the same ROOT session,
+   // you have to compile it to get signals/slots 'on place'.
+   //DeleteWindow();            // to stay in the ROOT session
+   gApplication->Terminate();   // to exit and close the ROOT session
+}
 
 
-void IntegratedTesterGui::DoDraw() {
+//funcion overwriting the standard CloseWindowof the TGMainFrame (ie the function that is called when clicking the 'X')
+void TGMainFrame::CloseWindow(){
+   gApplication->Terminate();		
+}
+
+
+std::string FEHTesterGUI::ReadCompleteFile(std::string filename)
+{
+  std::ifstream ifs(filename.c_str());
+  std::string content( (std::istreambuf_iterator<char>(ifs) ),
+                       (std::istreambuf_iterator<char>()    ) );
+
+  return content;
+}
+
+void FEHTesterGUI::WriteInfo(std::string information)
+{
+   //opening log file
+   time_t t = time(0);   // get time now
+   struct tm * now = localtime( & t );
+   char buffer[80];
+   strftime(buffer,80,"%c",now); 
+   std::ofstream ofs;
+   ofs.open(logPath,std::ofstream::out | std::ofstream::app);
+   ofs << buffer << " " << information << std::endl;
+   ofs.close();
+   std::cout << information << std::endl;
+}
+/*
+void FEHTesterGUI::WriteResultsTestToDB(int DateAndTime, std::string serialNumber, int status)
+{
+   std::string serial_number = fTextEntry->GetText();
+   std::cout << "serial number that will be written to DB: " << serial_number << std::endl;
+   std::ofstream ofs;
+   ofs.open(dataBasePath,std::ofstream::out | std::ofstream::app);
+   ofs << DateAndTime << "," << serialNumber << "," << status << std::endl;
+}
+*/
+/*void FEHTesterGUI::DoDraw() {
   char ROOTfile[200];
     //snprintf(ROOTfile , 200, "Results/IntegratedTesterFromGUI-%d/Summary.root", (int)DateAndTime);
     snprintf(ROOTfile , 200, "Results/IntegratedTesterFromGUI-1701311901/Summary.root");
@@ -485,62 +515,11 @@ void IntegratedTesterGui::DoDraw() {
    //gSystem->ProcessEvents();
 }
 
-int IntegratedTesterGui::returnDateAndTime(){
-   
-    time_t t = time(0);   // get time now
-    struct tm * now = localtime( & t );
-    char buffer[80];
-    strftime(buffer,80,"%g%m%d%H%M",now);
-  return atoi(buffer);
-}
+*/
 
-void IntegratedTesterGui::DoExit()
-{
-   WriteInfo("Closed the calibration GUI!");
-   logbook.close();
-   // Exit this application via the Exit button or Window Manager.
-   // Use one of the both lines according to your needs.
-   // Please note to re-run this macro in the same ROOT session,
-   // you have to compile it to get signals/slots 'on place'.
-   //DeleteWindow();            // to stay in the ROOT session
-   gApplication->Terminate();   // to exit and close the ROOT session
-}
-//funcion overwriting the standard CloseWindowof the TGMainFrame (ie the function that is called when clicking the 'X')
-void TGMainFrame::CloseWindow(){
-   gApplication->Terminate();		
-}
-
-
-std::string IntegratedTesterGui::ReadCompleteFile(std::string filename)
-{
-  std::ifstream ifs(filename.c_str());
-  std::string content( (std::istreambuf_iterator<char>(ifs) ),
-                       (std::istreambuf_iterator<char>()    ) );
-
-  return content;
-}
-
-void IntegratedTesterGui::WriteInfo(std::string information)
-{
-   //opening log file
-   std::ofstream ofs;
-   ofs.open(logPath,std::ofstream::out | std::ofstream::app);
-   ofs << time(NULL) << " " << information << std::endl;
-   ofs.close();
-   std::cout << information << std::endl;
-}
-
-void IntegratedTesterGui::WriteResultsTestToDB(int DateAndTime, std::string serialNumber, int status)
-{
-   std::string serial_number = fTextEntry->GetText();
-   std::cout << "serial number that will be written to DB: " << serial_number << std::endl;
-   std::ofstream ofs;
-   ofs.open(dataBasePath,std::ofstream::out | std::ofstream::app);
-   ofs << DateAndTime << "," << serialNumber << "," << status << std::endl;
-}
 /*
 //read the database and checks wether the calibration was succesful
-std::string * IntegratedTesterGui::ReadDBLastLine(){
+std::string * FEHTesterGUI::ReadDBLastLine(){
    fstream file(dataBasePath);
    static std::string r[2];
    std::string buffer;
@@ -575,7 +554,7 @@ std::string * IntegratedTesterGui::ReadDBLastLine(){
 } 
 */  
 /*
-int IntegratedTesterGui::runIntegratedTester(int nr_CBCs, int dateAndTime){
+int FEHTesterGUI::runIntegratedTester(int nr_CBCs, int dateAndTime){
    //char command[800];
    //std::cout << "dateAndTime: " << dateAndTime << " nr_CBCs: " << nr_CBCs << std::endl; 
    //snprintf( command, 800, "integratedtester -b -o Results/IntegratedTesterFromGUI-%d -f settings/HWDescription_%dCBC.xml --checkRegisters --calibrate --checkShorts --measureOccupancy", (int)dateAndTime, (int)nr_CBCs );
@@ -616,14 +595,14 @@ int IntegratedTesterGui::runIntegratedTester(int nr_CBCs, int dateAndTime){
    }*/   
 //}
  /*
-void IntegratedTesterGui::HandleReturn()
+void FEHTesterGUI::HandleReturn()
 {
    configXML = fConfigXML->GetText();
    std::cout << configXML << std::endl;
 }
 */
 /*
-void IntegratedTesterGui::DoAlreadyTestedPopUp(){
+void FEHTesterGUI::DoAlreadyTestedPopUp(){
    //create a new window for pop up
    fPopUp = new TGMainFrame(gClient->GetRoot(),300,300);
    fPopupTopVertical = new TGVerticalFrame(fPopUp,300,300);  
@@ -637,12 +616,12 @@ void IntegratedTesterGui::DoAlreadyTestedPopUp(){
    TGHorizontalFrame *fHorFrameForPopUpButtons = new TGHorizontalFrame(fPopupTopVertical);
    
    fProceed = new TGTextButton(fHorFrameForPopUpButtons, "&Proceed with the test", IDs.GetUnID());
-   fProceed->Connect("Clicked()", "IntegratedTesterGui", this, "ClosePopUpAndProceedWithTest()");
+   fProceed->Connect("Clicked()", "FEHTesterGUI", this, "ClosePopUpAndProceedWithTest()");
    fHorFrameForPopUpButtons->AddFrame(fProceed, new TGLayoutHints(kLHintsCenterY, 2,2,2,2));
    fStartTest->SetToolTipText("Click this button to redo the calibration. An entry will be added for this hybrid in the DB.");
    
    fCancelTest = new TGTextButton(fHorFrameForPopUpButtons, "&Cancel Test", IDs.GetUnID());
-   fCancelTest->Connect("Clicked()", "IntegratedTesterGui", this, "ClosePopUp()");
+   fCancelTest->Connect("Clicked()", "FEHTesterGUI", this, "ClosePopUp()");
    fHorFrameForPopUpButtons->AddFrame(fCancelTest, new TGLayoutHints(kLHintsCenterX,2,2,2,2));
    fCancelTest->SetToolTipText("Click this button to NOT proceed with the test.");
 //add the horizontal layout to the vertical
@@ -656,18 +635,18 @@ void IntegratedTesterGui::DoAlreadyTestedPopUp(){
    fPopUp->Resize(500,500);
    fPopUp->MapWindow();
 }
-void IntegratedTesterGui::ClosePopUp(){
+void FEHTesterGUI::ClosePopUp(){
     //FrameToClose->CloseWindow();
     std::cout << "This should close the PopUp" << std::endl;
     fPopUp->CloseWindow();
 }
 */
-ClassImp(IntegratedTesterGui);
+ClassImp(FEHTesterGUI);
 int main(int argc, char *argv[])
 {
   // XInitThreads();
    TApplication theApp("App", &argc, argv);
-   new IntegratedTesterGui(gClient->GetRoot(),120,120);
+   new FEHTesterGUI(gClient->GetRoot(),120,120);
    theApp.Run();
    return 0;
 }
