@@ -90,7 +90,7 @@ FEHTesterGUI::FEHTesterGUI(const TGWindow *p, UInt_t w, UInt_t h)
    //define the serialNumber label
    fGframe2 = new TGGroupFrame(fForLabels, "Serial Number");
    SerialNumberLabel = new TGLabel(fGframe2, "The serial number comes here");
-   fGframe2->AddFrame(SerialNumberLabel,new TGLayoutHints(kLHintsExpandY));
+   fGframe2->AddFrame(SerialNumberLabel,new TGLayoutHints(kLHintsExpandY|kLHintsCenterX));
    fForLabels->AddFrame(fGframe2,new TGLayoutHints(kLHintsTop|kLHintsExpandX,2,2,2,2));
    //define the test label
    fGframe3 = new TGGroupFrame(fForLabels, "Test Summary");
@@ -102,15 +102,16 @@ FEHTesterGUI::FEHTesterGUI(const TGWindow *p, UInt_t w, UInt_t h)
    DBStatusLabel = new TGLabel(fGframe4, db.isConnected()?"CONNECTED":"NOT CONNECTED");
    DBStatusLabel->SetTextColor(blue,kFALSE);
    gSystem->ProcessEvents();
-   fGframe4->AddFrame(DBStatusLabel,new TGLayoutHints(kLHintsExpandY|kLHintsExpandX|kLHintsCenterX));
+   fGframe4->AddFrame(DBStatusLabel,new TGLayoutHints(kLHintsExpandX|kLHintsCenterX));
    fForLabels->AddFrame(fGframe4,new TGLayoutHints(kLHintsTop|kLHintsExpandX,2,2,2,2));
 
-   fTopVertical->AddFrame(TestSummaryLabel, new TGLayoutHints(kLHintsExpandY, 2, 2, 2, 2));
+  //fTopVertical->AddFrame(TestSummaryLabel, new TGLayoutHints(kLHintsExpandY, 2, 2, 2, 2));
 
    //define the textedit for the serial number
    fTextEntry = new TGTextEntry(fForLabels, new TGTextBuffer(100));
    fForLabels->AddFrame(fTextEntry, new TGLayoutHints(kLHintsExpandX|kLHintsTop, 5, 5, 5, 5));
    fTextEntry->Connect("ReturnPressed()", "FEHTesterGUI", this, "ActivateTestButtonAndState()");    	
+  
    fTopVertical->AddFrame(fForLabels,new TGLayoutHints(kLHintsBottom|kLHintsExpandX,1,1,1,1));
 
    fTopTopHorizontal->AddFrame(fTopVertical,new TGLayoutHints(kLHintsLeft|kLHintsExpandX|kLHintsExpandY, 2,2,2,2));	
